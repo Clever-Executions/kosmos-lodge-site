@@ -12,7 +12,7 @@ code push *and* every content edit.
 | CMS      | [Sanity v3](https://www.sanity.io) (Studio in `studio/`)             |
 | Data     | GROQ queries via `@sanity/astro` + `@sanity/client` (`useCdn: false`)|
 | Hosting  | Netlify (continuous deploy from GitHub `main`)                       |
-| Repo     | https://github.com/zackdeBeer/kosmos-lodge-site                      |
+| Repo     | https://github.com/Clever-Executions/kosmos-lodge-site              |
 
 ## How it fits together
 
@@ -75,7 +75,7 @@ one at sanity.io/manage only when re-seeding; it is **not** stored in the repo.
 ## Local development
 
 ```bash
-git clone https://github.com/zackdeBeer/kosmos-lodge-site.git
+git clone https://github.com/Clever-Executions/kosmos-lodge-site.git
 cd kosmos-lodge-site
 npm install
 printf 'PUBLIC_SANITY_PROJECT_ID=j7q2a1is\nPUBLIC_SANITY_DATASET=production\n' > .env
