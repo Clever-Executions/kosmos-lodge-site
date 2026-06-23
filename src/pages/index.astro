@@ -1,0 +1,287 @@
+---
+import Layout from '../components/Layout.astro';
+import { sanityClient } from 'sanity:client';
+import { HOME_DATA_QUERY } from '../utils/queries';
+import { urlFor } from '../utils/sanity';
+
+const { page, settings, rooms, activities } = await sanityClient.fetch(HOME_DATA_QUERY);
+const wa = settings?.whatsapp ?? '27788872882';
+---
+<Layout
+  title="Kosmos Lodge - Hartbeespoort"
+  description="Exclusive private lodge in Kosmos Village, overlooking the Hartbeespoort Dam. 7 luxury rooms, stunning dam views, 5-star hospitality."
+  navActive="home"
+>
+
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="hero-bg" style={`background-image:url('${page?.heroImage ? urlFor(page.heroImage).width(1920).url() : '/assets/images/hero-bg.jpg'}')`}></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">{page?.heroBadge ?? 'Magaliesberg, Hartbeespoort'}</div>
+      <h1 set:html={page?.heroHeading ? page.heroHeading.replace(/\\n/g, '<br>') : 'Where Luxury Meets<br><em>The Dam Views</em>'}></h1>
+      <p>{page?.heroSubheading ?? 'Spend a luxurious weekend in an exclusive little private lodge, situated in the Magaliesberg mountain village of Kosmos, overlooking the Hartbeespoort Dam.'}</p>
+      <div class="hero-actions">
+        <a href="/rooms" class="btn btn-primary"><i class="fas fa-bed"></i> View Rooms</a>
+        <a href="/#contact" class="btn btn-outline"><i class="fas fa-paper-plane"></i> Get in Touch</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+  </section>
+
+  <!-- Features Strip -->
+  <div class="features-strip">
+    <div class="features-grid container">
+      {(page?.features ?? []).map((f: any) => (
+        <div class="feature-card fade-up">
+          <div class="feature-icon"><i class={f.icon}></i></div>
+          <h4>{f.heading}</h4>
+          <p>{f.subtext}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- About Section -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image-stack fade-up">
+          <div class="about-img-main">
+            {page?.aboutMainImage
+              ? <img src={urlFor(page.aboutMainImage).width(600).url()} alt="Kosmos Lodge view">
+              : <img src="/assets/images/gallery/IMG_5839.jpg" alt="Kosmos Lodge view">}
+          </div>
+          <div class="about-img-accent">
+            {page?.aboutAccentImage
+              ? <img src={urlFor(page.aboutAccentImage).width(300).url()} alt="Lodge detail">
+              : <img src="/assets/images/gallery/IMG_5812.jpg" alt="Lodge detail">}
+          </div>
+          <div class="about-stat">
+            <span class="num">{page?.establishedYear ?? 2015}</span>
+            <span class="lbl">Est.</span>
+          </div>
+        </div>
+        <div class="about-text fade-up">
+          <div class="section-label">{page?.aboutLabel ?? 'Our Story'}</div>
+          <h2>{page?.aboutHeading ?? "Traveller's Choice in Hartbeespoort"}</h2>
+          {(page?.aboutParagraphs ?? []).map((p: string) => <p>{p}</p>)}
+          <div class="accordion-list">
+            {(page?.accordionItems ?? []).map((item: any) => (
+              <div class="accordion-item">
+                <button class="accordion-trigger">
+                  {item.title}
+                  <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
+                </button>
+                <div class="accordion-body">
+                  <div class="accordion-body-inner">{item.body}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <a href="/#contact" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Get in Touch
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rooms Preview -->
+  <section class="rooms-section" id="rooms">
+    <div class="container">
+      <div class="section-header">
+        <div class="left">
+          <div class="section-label light">Accommodation</div>
+          <h2>Our Rooms</h2>
+          <p>{page?.roomsSectionIntro ?? 'Seven individually styled rooms, each offering comfort, quality and unforgettable views of the Hartbeespoort Dam.'}</p>
+        </div>
+        <a href="/rooms" class="btn btn-ghost">View All Rooms <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="rooms-grid">
+        {(rooms ?? []).map((room: any) => (
+          <div class="room-card fade-up">
+            <div class="room-card-img">
+              {room.cardImage
+                ? <img src={urlFor(room.cardImage).width(600).height(400).url()} alt={room.name}>
+                : <img src={`/assets/images/rooms/${room.name?.replace(' ', '_')}-card.jpg`} alt={room.name}>}
+              <span class="room-badge">{room.name}</span>
+              <div class="room-stars">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+              </div>
+            </div>
+            <div class="room-card-body">
+              <h3>{room.heroHeading}</h3>
+              <p>{room.tagline}</p>
+              <div class="room-card-footer">
+                <div class="room-tags">
+                  {(room.cardTags ?? []).map((tag: any) => (
+                    <span class="room-tag"><i class={tag.icon}></i> {tag.label}</span>
+                  ))}
+                </div>
+                <a href={`/rooms/${room.slug?.current}`} class="btn btn-ghost btn-sm">View</a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Photo Gallery -->
+  <section class="gallery-section" id="gallery">
+    <div class="container">
+      <div class="section-label">The Lodge</div>
+      <h2>Life at Kosmos Lodge</h2>
+      <p class="gallery-intro">A glimpse of our beautiful property and the stunning Hartbeespoort setting.</p>
+      <div class="gallery-grid">
+        {(page?.galleryImages ?? []).map((img: any) => (
+          <div class="gallery-item fade-up">
+            <img src={urlFor(img).width(400).height(300).url()} alt="Kosmos Lodge">
+            <div class="gallery-overlay"><i class="fas fa-expand-alt"></i></div>
+          </div>
+        ))}
+      </div>
+      <div class="gallery-footer">
+        <a href="/#contact" class="btn btn-ghost"><i class="fas fa-images"></i> Book Your Stay</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Explore Preview -->
+  <section class="explore-section" id="explore">
+    <div class="container">
+      <div class="section-header">
+        <div class="left">
+          <div class="section-label light">Around Us</div>
+          <h2>Eat, Explore &amp; Experience</h2>
+          <p>Hartbeespoort offers world-class attractions just minutes from your room.</p>
+        </div>
+        <a href="/explore" class="btn btn-ghost">All Attractions <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="explore-grid">
+        {(activities ?? []).slice(0, 6).map((act: any, i: number) => (
+          <div class="explore-card fade-up">
+            {act.cardImage
+              ? <img src={urlFor(act.cardImage).width(600).height(400).url()} alt={act.name}>
+              : <img src={`/assets/images/explore_0${i + 1}.jpg`} alt={act.name}>}
+            <div class="explore-overlay">
+              <span class="explore-num">No.{act.order ?? i + 1}</span>
+              <h3>{act.name}</h3>
+              <p>{act.cardSummary ?? (act.paragraphs?.[0] ?? '').substring(0, 120)}</p>
+              <a href={`/explore/${act.slug?.current}`} class="explore-link">Learn More <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Awards Section -->
+  {page?.awards?.length > 0 && (
+    <section class="awards-section">
+      <div class="container">
+        <div class="section-inner">
+          <div class="section-label" style="justify-content:center">Recognition</div>
+          <h2>Accommodation Awards</h2>
+          <p class="sub">Trusted and recognised by leading travel platforms worldwide.</p>
+        </div>
+        <div class="awards-grid">
+          {page.awards.map((award: any) => (
+            <div class="award-item fade-up">
+              <img src={urlFor(award).url()} alt="Award">
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Contact Section -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-form-wrap">
+          <div class="section-label light">Contact</div>
+          <h2>Let's Get in Touch</h2>
+          <p>Ready to book your stay or have questions? We'd love to hear from you.</p>
+          <form class="contact-form" action={settings?.formspreeUrl ?? 'https://formspree.io/f/mkoeeorg'} method="post">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Your Name *</label>
+                <input type="text" name="name" placeholder="John Smith" required>
+              </div>
+              <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email" name="email" placeholder="john@example.com" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" placeholder="+27 XX XXX XXXX">
+              </div>
+              <div class="form-group">
+                <label>Subject *</label>
+                <input type="text" name="subject" placeholder="Booking enquiry" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Message *</label>
+              <textarea name="message" placeholder="Tell us about your planned stay, preferred dates, number of guests..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane"></i> Send Message
+            </button>
+          </form>
+        </div>
+        <div class="contact-info">
+          <div class="contact-card">
+            <h3>Contact Details</h3>
+            <div class="contact-detail">
+              <div class="contact-icon"><i class="fas fa-phone"></i></div>
+              <div class="contact-detail-text">
+                <label>Phone Number</label>
+                <span>{settings?.phone ?? '+27 78 887 2882'}</span>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+              <div class="contact-detail-text">
+                <label>Email Address</label>
+                <span>{settings?.email ?? 'lodge@kosmoslodge.co.za'}</span>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div class="contact-detail-text">
+                <label>Address</label>
+                <span>{settings?.address ?? '121 Paul Kruger Ave, Kosmos, Hartbeespoort, 0261'}</span>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <div class="contact-icon"><i class="fas fa-globe"></i></div>
+              <div class="contact-detail-text">
+                <label>Website</label>
+                <span>www.kosmoslodge.co.za</span>
+              </div>
+            </div>
+            <div class="contact-social">
+              <a href={`https://wa.me/${wa}`} target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+              <a href={`mailto:${settings?.email ?? 'lodge@kosmoslodge.co.za'}`} title="Email"><i class="fas fa-envelope"></i></a>
+              <a href={settings?.facebookUrl ?? 'https://www.facebook.com/kosmoslodge'} target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+          </div>
+          <div class="rate-card">
+            <h3>{settings?.rateCardText ?? 'R1,000 - R2,700'}</h3>
+            <p>{settings?.rateCardSubtext ?? 'Per room per night, depending on room type, dates and number of guests. Enquire for best rates.'}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</Layout>

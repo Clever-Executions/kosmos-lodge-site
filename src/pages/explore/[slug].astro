@@ -1,0 +1,133 @@
+---
+import Layout from '../../components/Layout.astro';
+import { sanityClient } from 'sanity:client';
+import { defineQuery } from 'groq';
+import { urlFor } from '../../utils/sanity';
+
+export async function getStaticPaths() {
+  const { sanityClient: client } = await import('sanity:client');
+  const { defineQuery: dq } = await import('groq');
+  const SLUGS = dq(`*[_type == "activity" && defined(slug.current)]{ "params": { "slug": slug.current } }`);
+  return await client.fetch(SLUGS);
+}
+
+const { slug } = Astro.params;
+const ACTIVITY_QUERY = defineQuery(`*[_type == "activity" && slug.current == $slug][0]`);
+const ALL_ACTIVITIES_QUERY = defineQuery(`*[_type == "activity"] | order(order asc){ name, slug, sidebarIcon }`);
+const SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]`);
+
+const [activity, allActivities, settings] = await Promise.all([
+  sanityClient.fetch(ACTIVITY_QUERY, { slug }),
+  sanityClient.fetch(ALL_ACTIVITIES_QUERY),
+  sanityClient.fetch(SETTINGS_QUERY),
+]);
+
+const wa = settings?.whatsapp ?? '27788872882';
+const address = settings?.address ?? '121 Paul Kruger Ave, Kosmos, Hartbeespoort';
+const phone = settings?.phone ?? '+27 78 887 2882';
+const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
+---
+<Layout
+  title={`${activity?.name ?? 'Activity'} - Kosmos Lodge`}
+  description={activity?.cardSummary ?? `${activity?.name} near Kosmos Lodge, Hartbeespoort.`}
+  navActive="explore"
+  navStyle="solid"
+>
+  <section class="page-hero">
+    <div class="page-hero-bg" style={`background-image:url('${activity?.heroImage ? urlFor(activity.heroImage).width(1600).url() : ''}')`}></div>
+    <div class="container">
+      <h6>{activity?.heroLabel}</h6>
+      <h1>{activity?.name}</h1>
+    </div>
+  </section>
+
+  <section class="explore-detail-section">
+    <div class="container">
+      <a href="/explore" class="room-back-link"><i class="fas fa-arrow-left"></i> Back to Explore</a>
+      <div class="explore-detail-grid">
+
+        <div class="explore-detail-main">
+          <div class="explore-detail-img">
+            {activity?.mainImage && <img src={urlFor(activity.mainImage).width(800).url()} alt={activity.name}>}
+          </div>
+          <h2>{activity?.name}</h2>
+          {(activity?.paragraphs ?? []).map((p: string) => <p>{p}</p>)}
+
+          <div class="explore-info-grid">
+            {activity?.hours && (
+              <div class="explore-info-card">
+                <h5><i class="fas fa-clock"></i> Hours</h5>
+                <p>{activity.hours}</p>
+              </div>
+            )}
+            {activity?.locationAddress && (
+              <div class="explore-info-card">
+                <h5><i class="fas fa-map-marker-alt"></i> Location</h5>
+                <p>
+                  {activity.locationMapsUrl
+                    ? <a href={activity.locationMapsUrl} target="_blank">{activity.locationAddress}</a>
+                    : activity.locationAddress}
+                </p>
+              </div>
+            )}
+            {(activity?.contactPhone || activity?.contactEmail) && (
+              <div class="explore-info-card">
+                <h5><i class="fas fa-phone"></i> Contact</h5>
+                <p>
+                  {activity.contactPhone && <><a href={`tel:${activity.contactPhone}`}>{activity.contactPhone}</a><br></>}
+                  {activity.contactEmail && <a href={`mailto:${activity.contactEmail}`}>{activity.contactEmail}</a>}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <aside>
+          <div class="booking-panel">
+            <div class="booking-panel-title">Stay at Kosmos Lodge</div>
+            <div class="booking-row">
+              <div class="booking-icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div class="booking-row-text">
+                <label>Address</label>
+                <span>{address}</span>
+              </div>
+            </div>
+            <div class="booking-row">
+              <div class="booking-icon"><i class="fas fa-phone"></i></div>
+              <div class="booking-row-text">
+                <label>Phone</label>
+                <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
+              </div>
+            </div>
+            <div class="booking-row">
+              <div class="booking-icon"><i class="fas fa-envelope"></i></div>
+              <div class="booking-row-text">
+                <label>Email</label>
+                <a href={`mailto:${email}`}>{email}</a>
+              </div>
+            </div>
+            <hr class="booking-divider">
+            <div class="booking-actions">
+              <a href={`https://wa.me/${wa}`} target="_blank" class="btn btn-primary"><i class="fab fa-whatsapp"></i> WhatsApp Us</a>
+              <a href="/rooms" class="btn btn-ghost"><i class="fas fa-bed"></i> View Rooms</a>
+            </div>
+          </div>
+
+          <div class="explore-sidebar-nav">
+            <h4>Other Attractions</h4>
+            <ul>
+              {(allActivities ?? []).map((act: any) => (
+                <li class={act.slug?.current === slug ? 'active' : ''}>
+                  <a href={`/explore/${act.slug?.current}`}>
+                    <i class={act.sidebarIcon ?? 'fas fa-star'}></i> {act.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,73 @@
+---
+import Layout from '../components/Layout.astro';
+import { sanityClient } from 'sanity:client';
+import { ACTIVITIES_QUERY } from '../utils/queries';
+import { urlFor } from '../utils/sanity';
+
+const activities = await sanityClient.fetch(ACTIVITIES_QUERY);
+---
+<Layout
+  title="Explore - Kosmos Lodge"
+  description="Explore Hartbeespoort - Hot air ballooning, elephant sanctuary, cableway, safari, waterfront and more, all near Kosmos Lodge."
+  navActive="explore"
+  navStyle="solid"
+>
+  <section class="page-hero">
+    <div class="page-hero-bg" style="background-image:url('/assets/images/explore_01.jpg')"></div>
+    <div class="container">
+      <h6>Hartbeespoort</h6>
+      <h1>Eat, Explore &amp; Experience</h1>
+    </div>
+  </section>
+
+  <section class="explore-page-section">
+    <div class="container">
+      <div class="explore-page-grid">
+
+        <aside class="explore-page-sidebar">
+          <h4>What to Do &amp; See</h4>
+          <ul>
+            {(activities ?? []).map((act: any) => (
+              <li>
+                <a href={`/explore/${act.slug?.current}`}>
+                  <i class={act.sidebarIcon ?? 'fas fa-star'}></i> {act.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p style="color:rgba(255,255,255,.5);font-size:.82rem;line-height:1.65;margin-bottom:1.5rem;">
+            Hartbeespoort area is a very popular tourist destination because of its many hiking trails, bird sanctuaries and other outdoor activities.
+          </p>
+          <a href="/#contact" class="btn btn-primary" style="width:100%;justify-content:center;">
+            <i class="fas fa-paper-plane"></i> Contact Us
+          </a>
+        </aside>
+
+        <div>
+          <div class="explore-cards-grid">
+            {(activities ?? []).map((act: any) => (
+              <div class="explore-full-card fade-up">
+                <div class="explore-full-card-img">
+                  {act.cardImage
+                    ? <img src={urlFor(act.cardImage).width(600).height(400).url()} alt={act.name}>
+                    : act.mainImage
+                      ? <img src={urlFor(act.mainImage).width(600).height(400).url()} alt={act.name}>
+                      : null}
+                  <span class="explore-full-card-num">No.{act.order}</span>
+                </div>
+                <div class="explore-full-card-body">
+                  <h3>{act.name}</h3>
+                  <p>{act.cardSummary ?? act.paragraphs?.[0]?.substring(0, 200)}</p>
+                  <a href={`/explore/${act.slug?.current}`} class="btn btn-ghost btn-sm">
+                    <i class="fas fa-arrow-right"></i> View More
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,173 @@
+---
+import Layout from '../../components/Layout.astro';
+import { sanityClient } from 'sanity:client';
+import { defineQuery } from 'groq';
+import { urlFor } from '../../utils/sanity';
+
+export async function getStaticPaths() {
+  const { sanityClient: client } = await import('sanity:client');
+  const { defineQuery: dq } = await import('groq');
+  const SLUGS = dq(`*[_type == "room" && defined(slug.current)]{ "params": { "slug": slug.current } }`);
+  return await client.fetch(SLUGS);
+}
+
+const { slug } = Astro.params;
+const ROOM_QUERY = defineQuery(`*[_type == "room" && slug.current == $slug][0]`);
+const SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]`);
+
+const [room, settings] = await Promise.all([
+  sanityClient.fetch(ROOM_QUERY, { slug }),
+  sanityClient.fetch(SETTINGS_QUERY),
+]);
+
+const wa = settings?.whatsapp ?? '27788872882';
+const address = settings?.address ?? '121 Paul Kruger Ave, Kosmos, Hartbeespoort, 0260';
+const phone = settings?.phone ?? '+27 78 887 2882';
+const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
+const mapsUrl = settings?.mapsUrl ?? 'https://www.google.co.za/maps/place/Kosmos+Lodge';
+---
+<Layout
+  title={`${room?.name ?? 'Room'} - Kosmos Lodge`}
+  description={room?.tagline ?? `Luxury room at Kosmos Lodge, Hartbeespoort.`}
+  navActive="rooms"
+  navStyle="solid"
+>
+  <!-- Page Hero -->
+  <section class="page-hero">
+    <div class="page-hero-bg" style={`background-image:url('${room?.heroImage ? urlFor(room.heroImage).width(1600).url() : ''}')`}></div>
+    <div class="container">
+      <h6>{room?.heroLabel ?? 'Accommodation'}</h6>
+      <h1>{room?.heroHeading}</h1>
+    </div>
+  </section>
+
+  <!-- Photo Strip -->
+  {room?.gallery?.length > 0 && (
+    <div class="photo-strip">
+      {room.gallery.slice(0, 5).map((img: any) => (
+        <div class="photo-strip-item">
+          <img src={urlFor(img).width(400).height(300).url()} alt={room.name}>
+        </div>
+      ))}
+    </div>
+  )}
+
+  <!-- Room Detail -->
+  <section class="room-detail-section">
+    <div class="container">
+      <a href="/rooms" class="room-back-link"><i class="fas fa-arrow-left"></i> Back to All Rooms</a>
+      <div class="room-detail-grid">
+
+        <div class="room-detail-main fade-up">
+          <div class="section-label light">{room?.name}</div>
+          <h1>{room?.heroHeading}</h1>
+
+          <div class="room-meta-tags">
+            {(room?.metaTags ?? []).map((tag: any) => (
+              <span class="room-meta-tag"><i class={tag.icon}></i> {tag.label}</span>
+            ))}
+          </div>
+
+          <p class="room-lead">{room?.leadText}</p>
+
+          {room?.amenities?.length > 0 && (
+            <>
+              <div class="section-label light">Amenities</div>
+              <div class="amenities-grid">
+                {room.amenities.map((a: any) => (
+                  <div class="amenity-chip"><i class={a.icon}></i> {a.label}</div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {room?.gallery?.length > 0 && (
+            <>
+              <div class="section-label light">Photo Gallery</div>
+              <div class="room-photo-gallery">
+                {room.gallery.map((img: any) => (
+                  <div class="gallery-item">
+                    <img src={urlFor(img).width(400).height(300).url()} alt={room.name}>
+                    <div class="gallery-overlay"><i class="fas fa-expand-alt"></i></div>
+                    <div class="gallery-caption">{room.name}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <!-- Booking Panel -->
+        <div class="booking-panel fade-up">
+          <p class="booking-panel-title">Book This Room</p>
+
+          <div class="booking-row">
+            <div class="booking-icon"><i class="fas fa-bed"></i></div>
+            <div class="booking-row-text">
+              <label>Bed Type</label>
+              <span>{room?.bedType}</span>
+            </div>
+          </div>
+          <div class="booking-row">
+            <div class="booking-icon"><i class="fas fa-users"></i></div>
+            <div class="booking-row-text">
+              <label>Guests</label>
+              <span>{room?.maxGuests ? `${room.maxGuests} Adults` : '2 Adults'}</span>
+            </div>
+          </div>
+          {room?.viewDescription && (
+            <div class="booking-row">
+              <div class="booking-icon"><i class="fas fa-mountain"></i></div>
+              <div class="booking-row-text">
+                <label>View</label>
+                <span>{room.viewDescription}</span>
+              </div>
+            </div>
+          )}
+
+          <hr class="booking-divider">
+
+          <p class="booking-panel-title">Contact &amp; Location</p>
+          <div class="booking-row">
+            <div class="booking-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="booking-row-text">
+              <label>Address</label>
+              <a href={mapsUrl} target="_blank">{address}</a>
+            </div>
+          </div>
+          <div class="booking-row">
+            <div class="booking-icon"><i class="fas fa-phone"></i></div>
+            <div class="booking-row-text">
+              <label>Phone</label>
+              <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
+            </div>
+          </div>
+          <div class="booking-row">
+            <div class="booking-icon"><i class="fas fa-envelope"></i></div>
+            <div class="booking-row-text">
+              <label>Email</label>
+              <a href={`mailto:${email}`}>{email}</a>
+            </div>
+          </div>
+
+          <hr class="booking-divider">
+
+          <div class="booking-actions">
+            <a href={`https://wa.me/${wa}`} target="_blank" class="btn btn-primary"><i class="fab fa-whatsapp"></i> WhatsApp Us</a>
+            <a href={`mailto:${email}`} class="btn btn-ghost"><i class="fas fa-envelope"></i> Email Us</a>
+            <a href="/#contact" class="btn btn-dark"><i class="fas fa-comment"></i> Enquiry Form</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <img id="lightbox-img" src="" alt="Room photo">
+    <button class="lightbox-close" id="lightbox-close"><i class="fas fa-times"></i></button>
+    <button class="lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+    <button class="lightbox-next" id="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+  </div>
+</Layout>

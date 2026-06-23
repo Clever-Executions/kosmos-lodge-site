@@ -1,0 +1,57 @@
+---
+import Layout from '../components/Layout.astro';
+import { sanityClient } from 'sanity:client';
+import { ROOMS_QUERY, SITE_SETTINGS_QUERY } from '../utils/queries';
+import { urlFor } from '../utils/sanity';
+
+const [rooms, settings] = await Promise.all([
+  sanityClient.fetch(ROOMS_QUERY),
+  sanityClient.fetch(SITE_SETTINGS_QUERY),
+]);
+---
+<Layout
+  title="Rooms - Kosmos Lodge"
+  description="Kosmos Lodge rooms - 7 luxury rooms with dam views, en-suite bathrooms, DStv, WiFi and kitchenettes. Hartbeespoort."
+  navActive="rooms"
+  navStyle="solid"
+>
+  <section class="page-hero">
+    <div class="page-hero-bg" style="background-image:url('/assets/images/misc/IMG_5812.jpg')"></div>
+    <div class="container">
+      <h6>Accommodation</h6>
+      <h1>Luxurious Rooms &amp; Suites</h1>
+    </div>
+  </section>
+
+  <section class="rooms-page-section">
+    <div class="container">
+      <div class="rooms-grid">
+        {(rooms ?? []).map((room: any) => (
+          <div class="room-card fade-up">
+            <div class="room-card-img">
+              {room.cardImage
+                ? <img src={urlFor(room.cardImage).width(600).height(400).url()} alt={room.name}>
+                : <img src={`/assets/images/rooms/${room.name?.replace(' ', '_')}-card.jpg`} alt={room.name}>}
+              <span class="room-badge">{room.name}</span>
+              <div class="room-stars">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+              </div>
+            </div>
+            <div class="room-card-body">
+              <h3>{room.heroHeading}</h3>
+              <p>{room.tagline}</p>
+              <div class="room-card-footer">
+                <div class="room-tags">
+                  {(room.cardTags ?? []).map((tag: any) => (
+                    <span class="room-tag"><i class={tag.icon}></i> {tag.label}</span>
+                  ))}
+                </div>
+                <a href={`/rooms/${room.slug?.current}`} class="btn btn-ghost btn-sm">View</a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

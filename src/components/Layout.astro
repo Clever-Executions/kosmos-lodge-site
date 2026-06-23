@@ -1,0 +1,83 @@
+---
+import { sanityClient } from 'sanity:client';
+import { SITE_SETTINGS_QUERY } from '../utils/queries';
+
+interface Props {
+  title: string;
+  description?: string;
+  navActive?: 'home' | 'rooms' | 'explore' | '';
+  navStyle?: 'solid' | '';
+}
+
+const { title, description = '', navActive = '', navStyle = '' } = Astro.props;
+const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+
+const wa = settings?.whatsapp ?? '27788872882';
+const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
+const fb = settings?.facebookUrl ?? 'https://www.facebook.com/kosmoslodge';
+const welcomeText = settings?.welcomeBarText ?? 'Welcome to KOSMOS LODGE HARTBEESPOORT';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {description && <meta name="description" content={description}>}
+  <title>{title}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/kosmos-modern.css">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+  <link rel="apple-touch-icon" href="/favicon-512.png">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="container">
+      <span class="welcome">{welcomeText}</span>
+      <div class="socials">
+        <a href={`https://wa.me/${wa}`} target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href={`mailto:${email}`} title="Email"><i class="fas fa-envelope"></i></a>
+        <a href={fb} target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <nav class={`navbar ${navStyle}`} id="main-navbar">
+    <div class="container nav-container">
+      <a href="/" class="nav-logo"><img src="/corner_logo.png" alt="Kosmos Lodge"></a>
+      <ul class="nav-menu" id="nav-menu">
+        <li><a href="/" class={navActive === 'home' ? 'active' : ''}>Home</a></li>
+        <li><a href="/rooms" class={navActive === 'rooms' ? 'active' : ''}>Rooms</a></li>
+        <li><a href="/explore" class={navActive === 'explore' ? 'active' : ''}>Explore</a></li>
+        <li><a href="/#contact" class="nav-cta">Contact Us</a></li>
+      </ul>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <slot />
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>KosmosLodge &copy; {settings?.copyrightYear ?? 2025}</p>
+      <div class="top-bar" style="background:none;border:none;padding:0">
+        <div class="socials">
+          <a href={`https://wa.me/${wa}`} target="_blank"><i class="fab fa-whatsapp"></i></a>
+          <a href={`mailto:${email}`}><i class="fas fa-envelope"></i></a>
+          <a href={fb} target="_blank"><i class="fab fa-facebook-f"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <a href={`https://wa.me/${wa}`} target="_blank" class="wa-fab" title="Chat on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <script src="/kosmos-modern.js" is:inline></script>
+</body>
+</html>

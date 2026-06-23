@@ -1,0 +1,61 @@
+---
+import Layout from '../components/Layout.astro';
+import { sanityClient } from 'sanity:client';
+import { SPECIALS_QUERY, SITE_SETTINGS_QUERY } from '../utils/queries';
+import { urlFor } from '../utils/sanity';
+
+const [specials, settings] = await Promise.all([
+  sanityClient.fetch(SPECIALS_QUERY),
+  sanityClient.fetch(SITE_SETTINGS_QUERY),
+]);
+const wa = settings?.whatsapp ?? '27788872882';
+const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
+---
+<Layout
+  title="Specials - Kosmos Lodge"
+  description="Kosmos Lodge packages and specials - romantic getaways, weekend deals and exclusive offers in Hartbeespoort."
+  navStyle="solid"
+>
+  <section class="page-hero">
+    <div class="page-hero-bg" style="background-image:url('/assets/images/misc/IMG_5869.jpg')"></div>
+    <div class="container">
+      <h6>Kosmos Lodge</h6>
+      <h1>Packages &amp; Specials</h1>
+    </div>
+  </section>
+
+  <section class="specials-page-section">
+    <div class="container">
+      <p class="specials-intro">
+        We regularly run exclusive packages and specials - from romantic weekend getaways to midweek escapes and seasonal deals. Enquire directly for our latest offers and best rates.
+      </p>
+      <div class="specials-grid">
+        {(specials ?? []).map((s: any) => (
+          <div class="special-card fade-up">
+            <img src={urlFor(s.image).width(600).height(400).url()} alt={s.title}>
+            <div class="special-card-cta">
+              <p>{s.description ?? 'Exclusive offer'}</p>
+              <a href={`https://wa.me/${wa}`} target="_blank" class="btn btn-primary btn-sm">
+                <i class="fab fa-whatsapp"></i> Enquire
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="specials-cta-bar fade-up">
+        <div>
+          <h3>Not seeing what you're looking for?</h3>
+          <p>Contact us directly - we're happy to put together a custom package for your stay.</p>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+          <a href={`https://wa.me/${wa}`} target="_blank" class="btn btn-primary">
+            <i class="fab fa-whatsapp"></i> WhatsApp Us
+          </a>
+          <a href={`mailto:${email}`} class="btn btn-ghost">
+            <i class="fas fa-envelope"></i> Email Us
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
