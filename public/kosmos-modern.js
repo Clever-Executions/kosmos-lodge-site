@@ -34,23 +34,22 @@
     }
   }
 
-  /* ── Navbar scroll behaviour ── */
+  /* ── Navbar scroll behaviour ──
+     Smoothly fade the navbar from transparent (over the hero) to frosted glass
+     by mapping scroll position to a 0→1 progress variable the CSS interpolates. */
   var navbar = document.getElementById('main-navbar');
-  var topBar = document.querySelector('.top-bar');
   if (navbar && !navbar.classList.contains('solid')) {
+    var fadeDistance = Math.min(window.innerHeight * 0.6, 480);
     function onScroll() {
-      var threshold = topBar ? topBar.offsetHeight : 40;
-      if (window.scrollY > threshold) {
-        navbar.classList.add('scrolled');
-        navbar.style.top = '0';
-      } else {
-        navbar.classList.remove('scrolled');
-        navbar.style.top = (topBar ? topBar.offsetHeight : 0) + 'px';
-      }
+      var p = Math.min(Math.max(window.scrollY / fadeDistance, 0), 1);
+      navbar.style.setProperty('--nav-progress', p.toFixed(3));
     }
-    // Set initial top
-    navbar.style.top = (topBar ? topBar.offsetHeight : 0) + 'px';
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () {
+      fadeDistance = Math.min(window.innerHeight * 0.6, 480);
+      onScroll();
+    }, { passive: true });
   }
 
   /* ── Mobile menu ── */

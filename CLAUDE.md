@@ -106,8 +106,8 @@ repo during the transition; once the Cloudflare deployment is verified and DNS f
   `PUBLIC_SANITY_DATASET`) rather than left to dashboard configuration. Both values are
   public, non-secret identifiers, so this is safe — it makes the build deterministic on
   any platform and avoids per-environment (Production vs Preview) dashboard env var
-  scoping footguns. `.node-version` (`20`) pins the Node version the same way for any
-  platform that reads it.
+  scoping footguns. `.node-version` (`22`) pins the Node version the same way for any
+  platform that reads it (Wrangler requires Node ≥ 22).
 
 ### Cloudflare Pages setup
 

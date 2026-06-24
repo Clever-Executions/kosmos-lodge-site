@@ -15,7 +15,6 @@ const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
 const wa = settings?.whatsapp ?? '27788872882';
 const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
 const fb = settings?.facebookUrl ?? 'https://www.facebook.com/kosmoslodge';
-const welcomeText = settings?.welcomeBarText ?? 'Welcome to KOSMOS LODGE HARTBEESPOORT';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -32,17 +31,6 @@ const welcomeText = settings?.welcomeBarText ?? 'Welcome to KOSMOS LODGE HARTBEE
   <link rel="icon" href="/favicon.ico" sizes="32x32">
 </head>
 <body>
-
-  <div class="top-bar">
-    <div class="container">
-      <span class="welcome">{welcomeText}</span>
-      <div class="socials">
-        <a href={`https://wa.me/${wa}`} target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-        <a href={`mailto:${email}`} title="Email"><i class="fas fa-envelope"></i></a>
-        <a href={fb} target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-      </div>
-    </div>
-  </div>
 
   <nav class={`navbar ${navStyle}`} id="main-navbar">
     <div class="container nav-container">

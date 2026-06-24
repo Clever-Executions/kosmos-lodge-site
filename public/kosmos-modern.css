@@ -111,25 +111,35 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
    NAVBAR
    ================================================================ */
 .navbar {
+  /* --nav-progress: 0 (over hero) → 1 (scrolled). Set by JS on the homepage;
+     interior pages use .solid which pins it to 1 for a consistent frosted bar. */
+  --nav-progress: 0;
   position: fixed;
   top: 0; left: 0;
   width: 100%;
   z-index: 999;
-  padding: 1.4rem 0;
-  transition: all .4s ease;
+  /* Padding eases from roomy (over hero) to compact (scrolled) — tracks scroll directly. */
+  padding: calc(1.4rem - 0.7rem * var(--nav-progress)) 0;
+  background: rgba(13,27,15, calc(0.9 * var(--nav-progress)));
+  -webkit-backdrop-filter: blur(calc(14px * var(--nav-progress)));
+  backdrop-filter: blur(calc(14px * var(--nav-progress)));
+  border-bottom: 1px solid rgba(60,168,39, calc(0.18 * var(--nav-progress)));
+  box-shadow: 0 4px 30px rgba(0,0,0, calc(0.35 * var(--nav-progress)));
 }
-/* Recalculated by JS using top-bar height */
-.navbar.scrolled {
-  background: rgba(13,27,15,.97);
-  padding: .7rem 0;
-  box-shadow: 0 4px 30px rgba(0,0,0,.35);
+/* Soft top scrim for link legibility while the bar is transparent; fades out as it solidifies. */
+.navbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,.4), transparent);
+  opacity: calc(1 - var(--nav-progress));
 }
 .navbar.solid {
   position: sticky;
   top: 0;
-  background: var(--dark);
-  padding: .7rem 0;
-  box-shadow: 0 4px 30px rgba(0,0,0,.35);
+  --nav-progress: 1;
 }
 .nav-container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .nav-logo { display: inline-flex; align-items: center; }
