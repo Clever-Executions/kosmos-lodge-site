@@ -340,7 +340,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 .about-section::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('kosmos%20Lodge%20photos%20organised/Misc/IMG_5812.JPG');
+  background-image: url('/assets/images/misc/IMG_5812.jpg');
   background-attachment: scroll;
   background-size: cover;
   background-position: center var(--parallax-y, 50%);
@@ -567,7 +567,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 .contact-section::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('kosmos%20Lodge%20photos%20organised/Misc/IMG_5845.JPG');
+  background-image: url('/assets/images/misc/IMG_5845.jpg');
   background-attachment: scroll;
   background-size: cover;
   background-position: center var(--parallax-y, 50%);
@@ -740,7 +740,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 .rooms-page-section::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('kosmos%20Lodge%20photos%20organised/Room_5/IMG_5840.JPG');
+  background-image: url('/assets/images/gallery/IMG_5840.jpg');
   background-attachment: scroll;
   background-size: cover;
   background-position: center var(--parallax-y, 50%);
@@ -847,7 +847,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 .specials-page-section::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('kosmos%20Lodge%20photos%20organised/Room_6/primary.jpg');
+  background-image: url('/assets/images/rooms/Room_6-primary.jpg');
   background-attachment: scroll;
   background-size: cover;
   background-position: center var(--parallax-y, 50%);
@@ -888,7 +888,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 .room-detail-section::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('kosmos%20Lodge%20photos%20organised/Misc/IMG_5849.JPG');
+  background-image: url('/assets/images/misc/IMG_5849.jpg');
   background-attachment: scroll;
   background-size: cover;
   background-position: center var(--parallax-y, 50%);

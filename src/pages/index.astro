@@ -2,7 +2,7 @@
 import Layout from '../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { HOME_DATA_QUERY } from '../utils/queries';
-import { urlFor } from '../utils/sanity';
+import { urlFor, activityImage } from '../utils/sanity';
 
 const { page, settings, rooms, activities } = await sanityClient.fetch(HOME_DATA_QUERY);
 const wa = settings?.whatsapp ?? '27788872882';
@@ -163,11 +163,11 @@ const wa = settings?.whatsapp ?? '27788872882';
         <a href="/explore" class="btn btn-ghost">All Attractions <i class="fas fa-arrow-right"></i></a>
       </div>
       <div class="explore-grid">
-        {(activities ?? []).slice(0, 6).map((act: any, i: number) => (
+        {(activities ?? []).slice(0, 6).map((act: any, i: number) => {
+          const cardImg = activityImage(act, ['cardImage', 'mainImage'], { width: 600, height: 400 });
+          return (
           <div class="explore-card fade-up">
-            {act.cardImage
-              ? <img src={urlFor(act.cardImage).width(600).height(400).url()} alt={act.name}>
-              : <img src={`/assets/images/explore_0${i + 1}.jpg`} alt={act.name}>}
+            {cardImg && <img src={cardImg} alt={act.name}>}
             <div class="explore-overlay">
               <span class="explore-num">No.{act.order ?? i + 1}</span>
               <h3>{act.name}</h3>
@@ -175,7 +175,7 @@ const wa = settings?.whatsapp ?? '27788872882';
               <a href={`/explore/${act.slug?.current}`} class="explore-link">Learn More <i class="fas fa-arrow-right"></i></a>
             </div>
           </div>
-        ))}
+          );})}
       </div>
     </div>
   </section>

@@ -2,7 +2,7 @@
 import Layout from '../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { ACTIVITIES_QUERY } from '../utils/queries';
-import { urlFor } from '../utils/sanity';
+import { activityImage } from '../utils/sanity';
 
 const activities = await sanityClient.fetch(ACTIVITIES_QUERY);
 ---
@@ -45,14 +45,12 @@ const activities = await sanityClient.fetch(ACTIVITIES_QUERY);
 
         <div>
           <div class="explore-cards-grid">
-            {(activities ?? []).map((act: any) => (
+            {(activities ?? []).map((act: any) => {
+              const cardImg = activityImage(act, ['cardImage', 'mainImage'], { width: 600, height: 400 });
+              return (
               <div class="explore-full-card fade-up">
                 <div class="explore-full-card-img">
-                  {act.cardImage
-                    ? <img src={urlFor(act.cardImage).width(600).height(400).url()} alt={act.name}>
-                    : act.mainImage
-                      ? <img src={urlFor(act.mainImage).width(600).height(400).url()} alt={act.name}>
-                      : null}
+                  {cardImg && <img src={cardImg} alt={act.name}>}
                   <span class="explore-full-card-num">No.{act.order}</span>
                 </div>
                 <div class="explore-full-card-body">
@@ -63,7 +61,7 @@ const activities = await sanityClient.fetch(ACTIVITIES_QUERY);
                   </a>
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         </div>
 
