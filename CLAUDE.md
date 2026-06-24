@@ -11,7 +11,7 @@ code push *and* every content edit.
 | Frontend | [Astro 4](https://astro.build) — `output: "static"`                  |
 | CMS      | [Sanity v3](https://www.sanity.io) (Studio in `studio/`)             |
 | Data     | GROQ queries via `@sanity/astro` + `@sanity/client` (`useCdn: false`)|
-| Hosting  | Netlify (continuous deploy from GitHub `main`)                       |
+| Hosting  | Migrating Netlify → Cloudflare Pages (continuous deploy from GitHub `main`) |
 | Repo     | https://github.com/Clever-Executions/kosmos-lodge-site              |
 
 ## How it fits together
@@ -94,16 +94,41 @@ npx sanity deploy   # publish Studio to kosmoslodge.sanity.studio
 
 ## Deployment
 
-- **Hosting:** Netlify, connected to the GitHub repo for continuous deployment.
-- **Code changes:** every push to `main` triggers a Netlify rebuild + deploy.
-- **Content changes:** a Sanity webhook calls a Netlify **build hook** so edits in the
-  Studio auto-rebuild the site (see "Auto-redeploy" below).
-- Build settings come from `netlify.toml` — no manual config in the Netlify UI.
+**Hosting is migrating from Netlify to Cloudflare Pages.** Both configs are kept in the
+repo during the transition; once the Cloudflare deployment is verified and DNS for
+`kosmoslodge.co.za` is cut over, the Netlify project and `netlify.toml` can be retired.
+
+- **Code changes:** every push to `main` triggers a rebuild + deploy on whichever
+  platform(s) are connected to the repo.
+- **Content changes:** a Sanity webhook calls a platform build/deploy hook so edits in
+  the Studio auto-rebuild the site (see "Auto-redeploy" below).
+- **Env vars are baked into the `build` script in `package.json`** (`PUBLIC_SANITY_PROJECT_ID`,
+  `PUBLIC_SANITY_DATASET`) rather than left to dashboard configuration. Both values are
+  public, non-secret identifiers, so this is safe — it makes the build deterministic on
+  any platform and avoids per-environment (Production vs Preview) dashboard env var
+  scoping footguns. `.node-version` (`20`) pins the Node version the same way for any
+  platform that reads it.
+
+### Cloudflare Pages setup
+
+1. Cloudflare dashboard → **Workers & Pages** → *Create application* → **Pages** → connect
+   to GitHub repo `Clever-Executions/kosmos-lodge-site`.
+2. Build command: `npm run build`. Build output directory: `dist`. Root directory: `/`.
+3. No environment variables need to be set in the dashboard — they're baked into the
+   build script (see above).
+4. After the first successful deploy, go to **Settings → Builds & deployments → Deploy
+   hooks** and create one for `main`. Add it as a Sanity webhook (see below) so content
+   edits trigger rebuilds on Cloudflare too.
+5. Once verified, point `kosmoslodge.co.za` DNS at the Cloudflare Pages custom domain,
+   then disable/remove the Netlify site and `netlify.toml`.
 
 ### Auto-redeploy on content changes (setup)
 
 1. **Netlify:** Site configuration → Build & deploy → Build hooks → *Add build hook*
    (branch `main`). Copy the generated URL.
-2. **Sanity:** sanity.io/manage → project `j7q2a1is` → API → Webhooks → *Create webhook*,
-   paste the Netlify build hook URL, dataset `production`, trigger on
-   create/update/delete. Now every published content change rebuilds the site.
+   **Cloudflare Pages:** Settings → Builds & deployments → Deploy hooks → *Add deploy
+   hook* (branch `main`). Copy the generated URL.
+2. **Sanity:** sanity.io/manage → project `j7q2a1is` → API → Webhooks → *Create webhook*
+   for each build/deploy hook URL above, dataset `production`, trigger on
+   create/update/delete. Now every published content change rebuilds the site on every
+   connected platform.

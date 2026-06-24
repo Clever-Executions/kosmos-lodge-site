@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "PUBLIC_SANITY_PROJECT_ID=j7q2a1is PUBLIC_SANITY_DATASET=production astro build",
     "preview": "astro preview"
   },
   "dependencies": {
