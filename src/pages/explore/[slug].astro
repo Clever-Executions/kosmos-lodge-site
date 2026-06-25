@@ -3,6 +3,7 @@ import Layout from '../../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { defineQuery } from 'groq';
 import { activityImage } from '../../utils/sanity';
+import { breadcrumbJsonLd } from '../../utils/seo';
 
 export async function getStaticPaths() {
   const { sanityClient: client } = await import('sanity:client');
@@ -29,12 +30,25 @@ const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
 
 const heroImg = activityImage(activity, ['heroImage', 'mainImage', 'cardImage'], { width: 1600 });
 const mainImg = activityImage(activity, ['mainImage', 'heroImage', 'cardImage'], { width: 800 });
+
+const metaDescription =
+  activity?.cardSummary ??
+  (activity?.paragraphs?.[0]?.substring(0, 155)) ??
+  `${activity?.name} in Hartbeespoort — one of the attractions near Kosmos Lodge, a luxury guesthouse on the Hartbeespoort Dam.`;
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', path: '/' },
+  { name: 'Explore', path: '/explore' },
+  { name: activity?.name ?? 'Attraction', path: `/explore/${activity?.slug?.current}` },
+]);
 ---
 <Layout
-  title={`${activity?.name ?? 'Activity'} - Kosmos Lodge`}
-  description={activity?.cardSummary ?? `${activity?.name} near Kosmos Lodge, Hartbeespoort.`}
+  title={`${activity?.name ?? 'Activity'} in Hartbeespoort | Near Kosmos Lodge`}
+  description={metaDescription}
   navActive="explore"
   navStyle="solid"
+  image={heroImg ?? undefined}
+  jsonLd={[breadcrumb]}
 >
   <section class="page-hero">
     <div class="page-hero-bg" style={`background-image:url('${heroImg ?? ''}')`}></div>

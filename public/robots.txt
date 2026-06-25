@@ -1,0 +1,25 @@
+# Kosmos Lodge — luxury guesthouse, Hartbeespoort
+# All search engines and AI assistants are welcome to crawl and cite this site.
+User-agent: *
+Allow: /
+
+# Explicitly welcome major AI / answer engines (helps generative-AI discovery).
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://www.kosmoslodge.co.za/sitemap.xml

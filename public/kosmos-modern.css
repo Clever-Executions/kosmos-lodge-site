@@ -1233,3 +1233,77 @@ select:focus-visible {
   .hero-bg, .page-hero-bg { transform: none !important; }
   .fade-up { opacity: 1 !important; transform: none !important; }
 }
+
+/* ================================================================
+   SEO SECTIONS — Location (Find Us) & FAQ
+   Added for local-search visibility and AI-friendly Q&A content.
+   ================================================================ */
+.location-section { padding: 7rem 0; background: var(--white); }
+.location-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 2.5rem;
+  align-items: stretch;
+  margin-top: 2.5rem;
+}
+.location-map {
+  position: relative;
+  min-height: 360px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0,0,0,.06);
+}
+.location-map iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
+.location-info {
+  background: var(--off-white);
+  border-radius: var(--radius-lg);
+  padding: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.location-info h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  color: var(--dark);
+  margin-bottom: 1rem;
+}
+.location-address {
+  display: flex;
+  gap: .7rem;
+  align-items: flex-start;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 1.1rem;
+  font-weight: 500;
+}
+.location-address i { color: var(--green); margin-top: .2rem; flex-shrink: 0; }
+.location-note {
+  color: var(--text-light);
+  font-size: .9rem;
+  line-height: 1.8;
+  margin-bottom: 1.8rem;
+}
+.location-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+
+.faq-section { padding: 7rem 0; background: var(--off-white); }
+.faq-section h2 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  color: var(--dark);
+}
+.faq-section .sub { color: var(--text-light); margin-top: .6rem; }
+.faq-list {
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+}
+.faq-list .accordion-trigger { font-size: .98rem; }
+
+@media (max-width: 860px) {
+  .location-grid { grid-template-columns: 1fr; }
+  .location-map { min-height: 300px; }
+}

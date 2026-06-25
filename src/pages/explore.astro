@@ -3,14 +3,21 @@ import Layout from '../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { ACTIVITIES_QUERY } from '../utils/queries';
 import { activityImage } from '../utils/sanity';
+import { breadcrumbJsonLd } from '../utils/seo';
 
 const activities = await sanityClient.fetch(ACTIVITIES_QUERY);
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', path: '/' },
+  { name: 'Explore', path: '/explore' },
+]);
 ---
 <Layout
-  title="Explore - Kosmos Lodge"
-  description="Explore Hartbeespoort - Hot air ballooning, elephant sanctuary, cableway, safari, waterfront and more, all near Kosmos Lodge."
+  title="Things to Do in Hartbeespoort | Near Kosmos Lodge"
+  description="Discover the best of Hartbeespoort from Kosmos Lodge — hot-air ballooning, the Hartbeespoort Cableway, Elephant Sanctuary, dam cruises, the waterfront and Magaliesberg hikes, all minutes from your room."
   navActive="explore"
   navStyle="solid"
+  jsonLd={[breadcrumb]}
 >
   <section class="page-hero">
     <div class="page-hero-bg" style="background-image:url('/assets/images/explore_01.jpg')"></div>

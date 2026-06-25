@@ -1,34 +1,105 @@
 ---
 import { sanityClient } from 'sanity:client';
 import { SITE_SETTINGS_QUERY } from '../utils/queries';
+import {
+  BUSINESS,
+  DEFAULT_KEYWORDS,
+  lodgingBusinessJsonLd,
+  webSiteJsonLd,
+} from '../utils/seo';
 
 interface Props {
   title: string;
   description?: string;
   navActive?: 'home' | 'rooms' | 'explore' | '';
   navStyle?: 'solid' | '';
+  /** Absolute or site-relative image used for social/Open Graph previews. */
+  image?: string;
+  /** Comma-separated keywords; falls back to the sitewide Hartbeespoort set. */
+  keywords?: string;
+  /** Open Graph type — 'website' (default) or 'article'. */
+  ogType?: string;
+  /** Set true to keep a page out of search indexes (e.g. thank-you pages). */
+  noindex?: boolean;
+  /** Page-specific structured-data objects injected as JSON-LD. */
+  jsonLd?: Record<string, any>[];
 }
 
-const { title, description = '', navActive = '', navStyle = '' } = Astro.props;
+const {
+  title,
+  description = BUSINESS.description,
+  navActive = '',
+  navStyle = '',
+  image,
+  keywords = DEFAULT_KEYWORDS,
+  ogType = 'website',
+  noindex = false,
+  jsonLd = [],
+} = Astro.props;
 const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
 
-const wa = settings?.whatsapp ?? '27788872882';
-const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
+const wa = settings?.whatsapp ?? BUSINESS.whatsapp;
+const email = settings?.email ?? BUSINESS.email;
 const fb = settings?.facebookUrl ?? 'https://www.facebook.com/kosmoslodge';
+
+// Canonical URL for this page (Astro.site is set in astro.config.mjs).
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).href;
+// Resolve the social preview image to an absolute URL.
+const ogImage = image
+  ? new URL(image, Astro.site).href
+  : BUSINESS.defaultImage;
+
+// Sitewide structured data (the lodge entity + website), plus any page-specific blocks.
+const structuredData = [lodgingBusinessJsonLd(), webSiteJsonLd(), ...jsonLd];
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {description && <meta name="description" content={description}>}
   <title>{title}</title>
+  <meta name="description" content={description}>
+  <meta name="keywords" content={keywords}>
+  <meta name="author" content="Kosmos Lodge">
+  <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1'}>
+  <link rel="canonical" href={canonicalURL}>
+  <meta name="theme-color" content="#2e7d46">
+
+  <!-- Geo / local SEO -->
+  <meta name="geo.region" content="ZA-NW">
+  <meta name="geo.placename" content="Kosmos, Hartbeespoort">
+  <meta name="geo.position" content={`${BUSINESS.geo.latitude};${BUSINESS.geo.longitude}`}>
+  <meta name="ICBM" content={`${BUSINESS.geo.latitude}, ${BUSINESS.geo.longitude}`}>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content={ogType}>
+  <meta property="og:site_name" content="Kosmos Lodge">
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={canonicalURL}>
+  <meta property="og:image" content={ogImage}>
+  <meta property="og:image:alt" content="Kosmos Lodge — luxury guesthouse overlooking the Hartbeespoort Dam">
+  <meta property="og:locale" content="en_ZA">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={title}>
+  <meta name="twitter:description" content={description}>
+  <meta name="twitter:image" content={ogImage}>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/kosmos-modern.css">
   <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
   <link rel="apple-touch-icon" href="/favicon-512.png">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+  {structuredData.map((block) => (
+    <script type="application/ld+json" set:html={JSON.stringify(block)} />
+  ))}
 </head>
 <body>
 

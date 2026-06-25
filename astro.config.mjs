@@ -11,6 +11,8 @@ const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
 );
 
 export default defineConfig({
+  // Canonical production origin — used for canonical URLs, Open Graph and the sitemap.
+  site: "https://www.kosmoslodge.co.za",
   output: "hybrid",
 
   integrations: [

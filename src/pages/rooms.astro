@@ -3,17 +3,24 @@ import Layout from '../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { ROOMS_QUERY, SITE_SETTINGS_QUERY } from '../utils/queries';
 import { urlFor } from '../utils/sanity';
+import { breadcrumbJsonLd } from '../utils/seo';
 
 const [rooms, settings] = await Promise.all([
   sanityClient.fetch(ROOMS_QUERY),
   sanityClient.fetch(SITE_SETTINGS_QUERY),
 ]);
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', path: '/' },
+  { name: 'Rooms', path: '/rooms' },
+]);
 ---
 <Layout
-  title="Rooms - Kosmos Lodge"
-  description="Kosmos Lodge rooms - 7 luxury rooms with dam views, en-suite bathrooms, DStv, WiFi and kitchenettes. Hartbeespoort."
+  title="Luxury Rooms with Dam Views | Kosmos Lodge, Hartbeespoort"
+  description="Seven individually styled luxury rooms at Kosmos Lodge in Hartbeespoort — en-suite bathrooms, Hartbeespoort Dam views, DStv, free WiFi and private balconies. The ideal romantic stay for couples."
   navActive="rooms"
   navStyle="solid"
+  jsonLd={[breadcrumb]}
 >
   <section class="page-hero">
     <div class="page-hero-bg" style="background-image:url('/assets/images/misc/IMG_5812.jpg')"></div>

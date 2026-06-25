@@ -4,6 +4,7 @@ import { sanityClient } from 'sanity:client';
 import { defineQuery } from 'groq';
 import { urlFor } from '../../utils/sanity';
 import { roomGalleryFallback } from '../../utils/galleryFallback';
+import { SITE_URL, BUSINESS, breadcrumbJsonLd } from '../../utils/seo';
 
 export async function getStaticPaths() {
   const { sanityClient: client } = await import('sanity:client');
@@ -29,16 +30,55 @@ const sanityGallery = (room?.gallery ?? []) as any[];
 const galleryUrls: string[] = sanityGallery.length
   ? sanityGallery.map((img) => urlFor(img).width(800).url())
   : roomGalleryFallback(room?.number);
-const address = settings?.address ?? '121 Paul Kruger Ave, Kosmos, Hartbeespoort, 0260';
-const phone = settings?.phone ?? '+27 78 887 2882';
-const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
-const mapsUrl = settings?.mapsUrl ?? 'https://www.google.co.za/maps/place/Kosmos+Lodge';
+const address = settings?.address ?? BUSINESS.address.full;
+const phone = settings?.phone ?? BUSINESS.telephoneDisplay;
+const email = settings?.email ?? BUSINESS.email;
+const mapsUrl = settings?.mapsUrl ?? BUSINESS.mapsUrl;
+
+// Social/Open Graph image + structured data for this specific room.
+const ogImage = room?.heroImage
+  ? urlFor(room.heroImage).width(1200).url()
+  : (room?.cardImage ? urlFor(room.cardImage).width(1200).url() : undefined);
+
+const metaDescription =
+  room?.tagline ??
+  room?.leadText ??
+  `${room?.name ?? 'A luxury room'} at Kosmos Lodge — a luxury guesthouse in Hartbeespoort with Hartbeespoort Dam views.`;
+
+const roomJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'HotelRoom',
+  name: room?.heroHeading ?? room?.name,
+  description: metaDescription,
+  url: `${SITE_URL}/rooms/${room?.slug?.current}`,
+  ...(ogImage ? { image: ogImage } : {}),
+  ...(room?.bedType ? { bed: { '@type': 'BedDetails', typeOfBed: room.bedType } } : {}),
+  occupancy: {
+    '@type': 'QuantitativeValue',
+    maxValue: room?.maxGuests ?? 2,
+    unitText: 'guests',
+  },
+  amenityFeature: (room?.amenities ?? []).map((a: any) => ({
+    '@type': 'LocationFeatureSpecification',
+    name: a.label,
+    value: true,
+  })),
+  containedInPlace: { '@type': 'LodgingBusiness', '@id': `${SITE_URL}/#lodge`, name: BUSINESS.name },
+};
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', path: '/' },
+  { name: 'Rooms', path: '/rooms' },
+  { name: room?.name ?? 'Room', path: `/rooms/${room?.slug?.current}` },
+]);
 ---
 <Layout
-  title={`${room?.name ?? 'Room'} - Kosmos Lodge`}
-  description={room?.tagline ?? `Luxury room at Kosmos Lodge, Hartbeespoort.`}
+  title={`${room?.heroHeading ?? room?.name ?? 'Room'} | Kosmos Lodge, Hartbeespoort`}
+  description={metaDescription}
   navActive="rooms"
   navStyle="solid"
+  image={ogImage}
+  jsonLd={[roomJsonLd, breadcrumb]}
 >
   <!-- Page Hero -->
   <section class="page-hero">

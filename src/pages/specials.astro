@@ -3,18 +3,25 @@ import Layout from '../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { SPECIALS_QUERY, SITE_SETTINGS_QUERY } from '../utils/queries';
 import { urlFor } from '../utils/sanity';
+import { BUSINESS, breadcrumbJsonLd } from '../utils/seo';
 
 const [specials, settings] = await Promise.all([
   sanityClient.fetch(SPECIALS_QUERY),
   sanityClient.fetch(SITE_SETTINGS_QUERY),
 ]);
-const wa = settings?.whatsapp ?? '27788872882';
-const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
+const wa = settings?.whatsapp ?? BUSINESS.whatsapp;
+const email = settings?.email ?? BUSINESS.email;
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', path: '/' },
+  { name: 'Specials', path: '/specials' },
+]);
 ---
 <Layout
-  title="Specials - Kosmos Lodge"
-  description="Kosmos Lodge packages and specials - romantic getaways, weekend deals and exclusive offers in Hartbeespoort."
+  title="Specials & Romantic Getaway Packages | Kosmos Lodge, Hartbeespoort"
+  description="Exclusive packages and specials at Kosmos Lodge — romantic weekend getaways, midweek escapes and seasonal deals for couples in Hartbeespoort. Enquire for our best rates."
   navStyle="solid"
+  jsonLd={[breadcrumb]}
 >
   <section class="page-hero">
     <div class="page-hero-bg" style="background-image:url('/assets/images/misc/IMG_5869.jpg')"></div>
