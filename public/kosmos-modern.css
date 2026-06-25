@@ -360,7 +360,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   background-image: url('/assets/images/misc/IMG_5812.jpg');
   background-attachment: scroll;
   background-size: cover;
-  background-position: center var(--parallax-y, 50%);
+  background-position: center;
   opacity: 0.06;
   z-index: 0;
   pointer-events: none;
@@ -587,7 +587,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   background-image: url('/assets/images/misc/IMG_5845.jpg');
   background-attachment: scroll;
   background-size: cover;
-  background-position: center var(--parallax-y, 50%);
+  background-position: center;
   opacity: 0.05;
   z-index: 0;
   pointer-events: none;
@@ -760,7 +760,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   background-image: url('/assets/images/gallery/IMG_5840.jpg');
   background-attachment: scroll;
   background-size: cover;
-  background-position: center var(--parallax-y, 50%);
+  background-position: center;
   opacity: 0.07;
   z-index: 0;
   pointer-events: none;
@@ -867,7 +867,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   background-image: url('/assets/images/rooms/Room_6-primary.jpg');
   background-attachment: scroll;
   background-size: cover;
-  background-position: center var(--parallax-y, 50%);
+  background-position: center;
   opacity: 0.07;
   z-index: 0;
   pointer-events: none;
@@ -908,7 +908,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   background-image: url('/assets/images/misc/IMG_5849.jpg');
   background-attachment: scroll;
   background-size: cover;
-  background-position: center var(--parallax-y, 50%);
+  background-position: center;
   opacity: 0.07;
   z-index: 0;
   pointer-events: none;

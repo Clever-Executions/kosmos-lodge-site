@@ -1,39 +1,6 @@
 ﻿(function () {
   'use strict';
 
-  /* ── Parallax (desktop only — touch devices skip entirely) ── */
-  var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-
-  if (!isTouch) {
-    /* Hero / page-hero transform parallax */
-    var heroBg = document.querySelector('.hero-bg');
-    var pageHeroBg = document.querySelector('.page-hero-bg');
-    var parallaxBg = heroBg || pageHeroBg;
-    if (parallaxBg) {
-      window.addEventListener('scroll', function () {
-        parallaxBg.style.transform = 'translateY(' + (window.scrollY * 0.4) + 'px)';
-      }, { passive: true });
-    }
-
-    /* Section pseudo-element parallax — skip off-screen to avoid extreme offsets */
-    var parallaxSections = document.querySelectorAll('.about-section, .contact-section, .rooms-page-section, .specials-page-section, .room-detail-section');
-    if (parallaxSections.length) {
-      function updateSectionParallax() {
-        parallaxSections.forEach(function (el) {
-          var rect = el.getBoundingClientRect();
-          if (rect.bottom < 0 || rect.top > window.innerHeight) {
-            el.style.removeProperty('--parallax-y');
-            return;
-          }
-          var offset = (rect.top + rect.height / 2 - window.innerHeight / 2) * -0.4;
-          el.style.setProperty('--parallax-y', 'calc(50% + ' + offset + 'px)');
-        });
-      }
-      updateSectionParallax();
-      window.addEventListener('scroll', updateSectionParallax, { passive: true });
-    }
-  }
-
   /* ── Navbar scroll behaviour ──
      Smoothly fade the navbar from transparent (over the hero) to frosted glass
      by mapping scroll position to a 0→1 progress variable the CSS interpolates. */
