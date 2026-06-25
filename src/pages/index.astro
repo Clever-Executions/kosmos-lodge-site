@@ -3,9 +3,17 @@ import Layout from '../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { HOME_DATA_QUERY } from '../utils/queries';
 import { urlFor, activityImage } from '../utils/sanity';
+import { galleryFallback } from '../utils/galleryFallback';
 
 const { page, settings, rooms, activities } = await sanityClient.fetch(HOME_DATA_QUERY);
 const wa = settings?.whatsapp ?? '27788872882';
+
+// "Life at Kosmos Lodge" gallery: use Sanity images if set, otherwise fall back
+// to a random selection of the bundled lodge photos.
+const sanityGallery = (page?.galleryImages ?? []) as any[];
+const galleryUrls: string[] = sanityGallery.length
+  ? sanityGallery.map((img) => urlFor(img).width(400).height(300).url())
+  : galleryFallback(9);
 ---
 <Layout
   title="Kosmos Lodge - Hartbeespoort"
@@ -138,9 +146,9 @@ const wa = settings?.whatsapp ?? '27788872882';
       <h2>Life at Kosmos Lodge</h2>
       <p class="gallery-intro">A glimpse of our beautiful property and the stunning Hartbeespoort setting.</p>
       <div class="gallery-grid">
-        {(page?.galleryImages ?? []).map((img: any) => (
+        {galleryUrls.map((src: string) => (
           <div class="gallery-item fade-up">
-            <img src={urlFor(img).width(400).height(300).url()} alt="Kosmos Lodge">
+            <img src={src} alt="Kosmos Lodge" loading="lazy">
             <div class="gallery-overlay"><i class="fas fa-expand-alt"></i></div>
           </div>
         ))}

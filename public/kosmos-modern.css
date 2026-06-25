@@ -1,11 +1,18 @@
 ﻿/* ================================================================
    KOSMOS LODGE — Modern Redesign
-   Palette: Accent #3ca827 · Dark Forest #0f1f12 · Warm Cream #F5ECD2
+   Palette: Forest Emerald #2e7d46 · Brushed Gold #c9a24b
+            Dark Forest #0f1f12 · Warm Cream #F5ECD2
+   Two-tone system — GREEN = brand/interaction, GOLD = luxury accent.
    ================================================================ */
 :root {
-  --green:        #3ca827;
-  --green-dark:   #2d8a1c;
-  --green-light:  #5ce040;
+  /* Deep, refined forest emerald (replaces the old neon lime — reads as
+     5-star rather than budget-eco). Green stays the action/brand colour. */
+  --green:        #2e7d46;
+  --green-dark:   #21603a;
+  --green-light:  #74c08e;   /* legible sage-emerald accent on dark surfaces */
+  /* Brushed gold — the decorative luxury accent (labels, badges, flourishes). */
+  --gold:         #c9a24b;
+  --gold-soft:    #e0c074;
   --dark:         #0f1f12;
   --dark-mid:     #162918;
   --dark-card:    #131f15;
@@ -13,7 +20,7 @@
   --text-light:   #687869;
   --white:        #ffffff;
   --off-white:    #F5ECD2;
-  --shadow:       0 4px 30px rgba(0,0,0,.1);
+  --shadow:       0 10px 40px rgba(0,0,0,.12);
   --radius:       12px;
   --radius-lg:    20px;
   --trans:        color .25s ease, background-color .25s ease, border-color .25s ease, box-shadow .25s ease, transform .25s ease, opacity .25s ease;
@@ -986,9 +993,11 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
    Light sections (ivory/white) use dark forest green, never lime.
    ================================================================ */
 .about-section .section-label,
-.gallery-section .section-label { color: var(--green); }
+.gallery-section .section-label,
+.awards-section .section-label { color: var(--green); }
 .about-section .section-label::before,
-.gallery-section .section-label::before { background: var(--green); }
+.gallery-section .section-label::before,
+.awards-section .section-label::before { background: var(--green); }
 /* Accordion lives in about-section (ivory bg) */
 .accordion-trigger:hover { color: var(--green) !important; }
 .accordion-icon { color: var(--green) !important; }
@@ -1149,4 +1158,78 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   .explore-detail-grid { grid-template-columns: 1fr; }
   .explore-detail-grid > aside { position: static; }
   .explore-info-grid { grid-template-columns: 1fr; }
+}
+
+/* ================================================================
+   LUXURY REFINEMENT LAYER (2026)
+   Two-tone system on dark surfaces: brushed GOLD as the decorative
+   accent (labels, badges, numbers), forest GREEN reserved for
+   interaction (buttons, links, hovers). Plus the two accessibility
+   gaps that were missing (visible focus, reduced motion) and a touch
+   of editorial typographic polish. Appended last so it cleanly
+   overrides the base rules and is easy to review or revert.
+   ================================================================ */
+
+/* — Editorial serif headings: refined weight + tracking —
+   Cinzel reads more elegant at 600 than the heavier 700. */
+.hero h1,
+.section-header h2,
+.about-text h2,
+.gallery-section h2,
+.awards-section h2,
+.page-hero h1,
+.room-detail-main h1,
+.explore-detail-main > h2 {
+  font-weight: 600;
+  letter-spacing: .015em;
+}
+.hero h1 { line-height: 1.18; }
+
+/* — Gold decorative accents on dark surfaces —
+   `.section-label.light` is the dark-surface variant; light/ivory
+   sections keep forest green (handled in the override block above). */
+.section-label.light { color: var(--gold); }
+.section-label.light::before { background: var(--gold); }
+.hero-badge {
+  color: var(--gold);
+  background: rgba(201,162,75,.14);
+  border-color: rgba(201,162,75,.45);
+}
+.hero h1 em { color: var(--gold-soft); }
+.page-hero h6,
+.booking-panel-title,
+.contact-card h3 { color: var(--gold); }
+
+/* Filled accent chips → brushed gold with dark text (premium, high-contrast) */
+.room-badge,
+.explore-num,
+.explore-full-card-num {
+  background: var(--gold);
+  color: var(--dark);
+}
+
+/* — Visible keyboard focus (accessibility — was missing entirely) — */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.nav-menu a:focus-visible,
+.gallery-item:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* — Respect prefers-reduced-motion (accessibility — was missing) — */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .hero-bg, .page-hero-bg { transform: none !important; }
+  .fade-up { opacity: 1 !important; transform: none !important; }
 }

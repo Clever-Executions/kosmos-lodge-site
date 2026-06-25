@@ -3,6 +3,7 @@ import Layout from '../../components/Layout.astro';
 import { sanityClient } from 'sanity:client';
 import { defineQuery } from 'groq';
 import { urlFor } from '../../utils/sanity';
+import { roomGalleryFallback } from '../../utils/galleryFallback';
 
 export async function getStaticPaths() {
   const { sanityClient: client } = await import('sanity:client');
@@ -21,6 +22,13 @@ const [room, settings] = await Promise.all([
 ]);
 
 const wa = settings?.whatsapp ?? '27788872882';
+
+// Room photos: use the Sanity gallery if set, otherwise fall back to the bundled
+// photos for this room (public/assets/images/rooms/Room_<number>-*.jpg).
+const sanityGallery = (room?.gallery ?? []) as any[];
+const galleryUrls: string[] = sanityGallery.length
+  ? sanityGallery.map((img) => urlFor(img).width(800).url())
+  : roomGalleryFallback(room?.number);
 const address = settings?.address ?? '121 Paul Kruger Ave, Kosmos, Hartbeespoort, 0260';
 const phone = settings?.phone ?? '+27 78 887 2882';
 const email = settings?.email ?? 'lodge@kosmoslodge.co.za';
@@ -42,11 +50,11 @@ const mapsUrl = settings?.mapsUrl ?? 'https://www.google.co.za/maps/place/Kosmos
   </section>
 
   <!-- Photo Strip -->
-  {room?.gallery?.length > 0 && (
+  {galleryUrls.length > 0 && (
     <div class="photo-strip">
-      {room.gallery.slice(0, 5).map((img: any) => (
+      {galleryUrls.slice(0, 5).map((src: string) => (
         <div class="photo-strip-item">
-          <img src={urlFor(img).width(400).height(300).url()} alt={room.name}>
+          <img src={src} alt={room.name} loading="lazy">
         </div>
       ))}
     </div>
@@ -81,13 +89,13 @@ const mapsUrl = settings?.mapsUrl ?? 'https://www.google.co.za/maps/place/Kosmos
             </>
           )}
 
-          {room?.gallery?.length > 0 && (
+          {galleryUrls.length > 0 && (
             <>
               <div class="section-label light">Photo Gallery</div>
               <div class="room-photo-gallery">
-                {room.gallery.map((img: any) => (
+                {galleryUrls.map((src: string) => (
                   <div class="gallery-item">
-                    <img src={urlFor(img).width(400).height(300).url()} alt={room.name}>
+                    <img src={src} alt={room.name} loading="lazy">
                     <div class="gallery-overlay"><i class="fas fa-expand-alt"></i></div>
                     <div class="gallery-caption">{room.name}</div>
                   </div>
