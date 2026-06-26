@@ -429,17 +429,19 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 /* Gold glow that continues the reviews-section glow upward across the seam, but
    sits BELOW the room cards. Rendered inside the rooms section's own stacking
    context (z-index:0) so it paints above the dark background yet under the cards
-   (which are lifted to z-index:1 below). Anchored to the bottom-left so it lines
-   up with the reviews gold glow directly beneath it. */
+   (which are lifted to z-index:1 below). This is an exact vertical mirror of
+   .reviews-section::before (same width/height/left/opacity, center the same
+   distance above the seam as that blob's center is below it) so brightness is
+   continuous across the boundary instead of jumping at the seam. */
 .rooms-section::after {
   content: '';
   position: absolute;
-  bottom: -240px; left: -240px;
+  bottom: -60px; left: -240px;
   width: 720px; height: 520px;
   background: var(--gold);
   border-radius: 50%;
   filter: blur(120px);
-  opacity: .14;
+  opacity: .2;
   pointer-events: none;
   z-index: 0;
 }
