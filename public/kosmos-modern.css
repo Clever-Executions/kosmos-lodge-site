@@ -1239,6 +1239,12 @@ select:focus-visible {
    Added for local-search visibility and AI-friendly Q&A content.
    ================================================================ */
 .location-section { padding: 5.5rem 0; background: var(--white); }
+/* This section sits on a WHITE background, but `.section-header` h2/p default to
+   white text (they're built for the dark rooms/explore/reviews bands). Without
+   this override the heading and intro render white-on-white — invisible — which
+   reads as a big empty gap above the map. Force them to the dark on-light scale. */
+.location-section .section-header h2 { color: var(--dark); }
+.location-section .section-header p { color: var(--text-light); }
 /* Single, tight gap between the heading and the map — no doubled margins, and
    the grid stretches both columns to equal height so the map fills the row
    instead of sitting short with empty space around it. */
@@ -1323,12 +1329,9 @@ select:focus-visible {
   padding: 7rem 0;
   background: var(--dark);
   position: relative;
-  /* Clip the glow blobs horizontally (no page scroll) but let them spill
-     VERTICALLY so the gold glow bleeds up across the seam into the rooms
-     section — no hard edge. The ivory gallery below is opaque and paints
-     over any downward green spill. */
-  overflow-x: clip;
-  overflow-y: visible;
+  /* Fully contain the glow blobs inside this band — they must NOT spill up into
+     the rooms section above (the gold was washing over the room cards). */
+  overflow: clip;
 }
 /* Soft gold + emerald glows so the dark band doesn't read as flat, and so the
    warm glow continues seamlessly out of the rooms section above. */
@@ -1341,14 +1344,13 @@ select:focus-visible {
   pointer-events: none;
   z-index: 0;
 }
-/* Gold: anchored to the LEFT of the band and pulled above the top edge so it
-   washes up into the rooms section without a visible seam between the two dark
-   bands. Sits on the glow layer (z-index:0) — every review element renders
+/* Gold: anchored to the LEFT of the band and kept inside it (the section clips
+   overflow). Sits on the glow layer (z-index:0) — every review element renders
    above it (z-index:2 below). */
 .reviews-section::before {
   background: var(--gold);
   width: 720px; height: 520px;
-  top: -300px; left: -200px;
+  top: -60px; left: -240px;
   transform: none;
   opacity: .2;
 }
