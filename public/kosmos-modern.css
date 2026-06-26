@@ -24,6 +24,9 @@
   --radius:       12px;
   --radius-lg:    20px;
   --trans:        color .25s ease, background-color .25s ease, border-color .25s ease, box-shadow .25s ease, transform .25s ease, opacity .25s ease;
+  /* Uniform vertical rhythm between sections (scales down gracefully on small
+     viewports). Used by every top-level band so spacing stays consistent. */
+  --section-pad:  clamp(4.75rem, 8vw, 7rem);
 }
 
 /* ── Reset ── */
@@ -309,7 +312,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 /* ================================================================
    FEATURES STRIP
    ================================================================ */
-.features-strip { background: var(--dark); }
+.features-strip { background: var(--dark); position: relative; }
 .features-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -350,7 +353,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
    ABOUT SECTION
    ================================================================ */
 .about-section {
-  padding: 7rem 0;
+  padding: var(--section-pad) 0;
   background: var(--off-white);
   position: relative;
 }
@@ -425,7 +428,9 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 /* ================================================================
    ROOMS SECTION (homepage preview)
    ================================================================ */
-.rooms-section { padding: 7rem 0 3.5rem; background: var(--dark); position: relative; overflow: clip; }
+/* Full padding on top, tightened bottom so the rooms→reviews dark pair reads as
+   one continuous unit across the shared gold-glow seam. */
+.rooms-section { padding: var(--section-pad) 0 3.5rem; background: var(--dark); position: relative; overflow: clip; }
 /* Gold glow that continues the reviews-section glow upward across the seam, but
    sits BELOW the room cards. Rendered inside the rooms section's own stacking
    context (z-index:0) so it paints above the dark background yet under the cards
@@ -492,7 +497,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 /* ================================================================
    PHOTO GALLERY
    ================================================================ */
-.gallery-section { padding: 7rem 0; background: var(--off-white); }
+.gallery-section { padding: var(--section-pad) 0; background: var(--off-white); }
 .gallery-section h2 { font-family: 'Cinzel', serif; font-size: clamp(1.8rem, 3.5vw, 2.6rem); color: var(--dark); }
 .gallery-intro { color: var(--text-light); font-size: .92rem; margin-top: .6rem; }
 .gallery-grid {
@@ -545,7 +550,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
    EXPLORE SECTION (homepage preview)
    ================================================================ */
 .explore-section {
-  padding: 7rem 0;
+  padding: var(--section-pad) 0;
   background: var(--dark);
   position: relative;
 }
@@ -579,7 +584,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 /* ================================================================
    AWARDS SECTION
    ================================================================ */
-.awards-section { padding: 5.5rem 0; background: var(--off-white); }
+.awards-section { padding: var(--section-pad) 0; background: var(--off-white); }
 .awards-section .section-inner { text-align: center; margin-bottom: 3rem; }
 .awards-section h2 { font-family: 'Cinzel', serif; font-size: clamp(1.8rem, 3vw, 2.4rem); color: var(--dark); margin-bottom: .5rem; }
 .awards-section .sub { color: var(--text-light); font-size: .9rem; }
@@ -600,7 +605,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
    CONTACT SECTION
    ================================================================ */
 .contact-section {
-  padding: 7rem 0;
+  padding: var(--section-pad) 0;
   background: var(--dark);
   position: relative;
 }
@@ -1081,8 +1086,18 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 
   .features-grid { grid-template-columns: repeat(2, 1fr); }
   .about-grid  { grid-template-columns: 1fr; gap: 3rem; }
-  .about-image-stack { padding-right: 0; padding-bottom: 4rem; }
-  .about-img-accent { right: 0; }
+  /* Stacked single-column on mobile, the 3:4 portrait main image grew to fill
+     the full viewport width and dominated the screen. Cap the stack, centre it
+     and use a calmer landscape ratio so it reads as a feature, not a billboard. */
+  .about-image-stack {
+    padding-right: 0;
+    padding-bottom: 2.75rem;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .about-img-main { aspect-ratio: 4 / 3; }
+  .about-img-accent { right: 0; width: 46%; }
   .about-stat   { right: 0; }
 
   /* Card collections stay 2-up on phones/tablets — never one card per screen.
@@ -1333,7 +1348,7 @@ select:focus-visible {
    SEO SECTIONS — Location (Find Us) & FAQ
    Added for local-search visibility and AI-friendly Q&A content.
    ================================================================ */
-.location-section { padding: 5.5rem 0; background: var(--white); }
+.location-section { padding: var(--section-pad) 0; background: var(--white); }
 /* This section sits on a WHITE background, but `.section-header` h2/p default to
    white text (they're built for the dark rooms/explore/reviews bands). Without
    this override the heading and intro render white-on-white — invisible — which
@@ -1393,7 +1408,7 @@ select:focus-visible {
 }
 .location-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
 
-.faq-section { padding: 7rem 0; background: var(--off-white); }
+.faq-section { padding: var(--section-pad) 0; background: var(--off-white); }
 .faq-section h2 {
   font-family: 'Cinzel', serif;
   font-size: clamp(1.8rem, 3.5vw, 2.6rem);
@@ -1421,7 +1436,7 @@ select:focus-visible {
    cream cards carry the quotes. Marquee loops via a duplicated track.
    ================================================================ */
 .reviews-section {
-  padding: 3.5rem 0 7rem;
+  padding: 3.5rem 0 var(--section-pad);
   background: var(--dark);
   position: relative;
   /* Fully contain the glow blobs inside this band — they must NOT spill up into
@@ -1495,13 +1510,16 @@ select:focus-visible {
   border: 1px solid rgba(201,162,75,.22);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(4px);
+  transition: var(--trans);
 }
-.review-stat--link { transition: var(--trans); }
-.review-stat--link:hover {
+/* Every stat card lifts + brightens on hover — not just the linked one. */
+.review-stat:hover {
   transform: translateY(-3px);
   border-color: rgba(201,162,75,.55);
   background: rgba(255,255,255,.06);
+  box-shadow: 0 18px 42px rgba(0,0,0,.22);
 }
+.review-stat--link { cursor: pointer; }
 .review-stat-figure {
   font-family: 'Cinzel', serif;
   font-weight: 700;
@@ -1658,3 +1676,42 @@ select:focus-visible {
   }
   .review-card[aria-hidden="true"] { display: none; }
 }
+
+/* ================================================================
+   SECTION TRANSITIONS & SEAMS
+   The bands previously butted together as flat blocks. These soft,
+   neighbour-independent seam treatments give each section a gentle
+   top edge so the page reads as one flowing composition. Inset
+   shadows paint above the background but beneath the .container
+   content, so they never touch the text or cards.
+   ================================================================ */
+
+/* Light bands get a faint shadow ledge at the top — reads as depth when
+   they follow a dark band, and as a clean separator between two light bands. */
+.gallery-section,
+.about-section,
+.awards-section,
+.location-section,
+.faq-section {
+  box-shadow: inset 0 22px 34px -28px rgba(15, 31, 18, .5);
+}
+
+/* Dark bands that follow a light one get a soft warm light-bleed at the top
+   instead, so the cut from ivory into forest feels lit rather than abrupt.
+   (Rooms and Reviews are deliberately excluded — their shared gold glow seam
+   must stay perfectly continuous.) */
+.explore-section,
+.contact-section {
+  box-shadow: inset 0 22px 40px -30px rgba(224, 192, 116, .22);
+}
+
+/* Features → Rooms is the one dark→dark seam: a hairline gold rule + a soft
+   inner shadow on the rooms band seats it under the features strip. */
+.features-strip::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 162, 75, .35), transparent);
+}
+.rooms-section { box-shadow: inset 0 24px 38px -30px rgba(0, 0, 0, .55); }

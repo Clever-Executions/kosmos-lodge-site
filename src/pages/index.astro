@@ -116,51 +116,6 @@ const faqs = [
     </div>
   </div>
 
-  <!-- About Section -->
-  <section class="about-section" id="about">
-    <div class="container">
-      <div class="about-grid">
-        <div class="about-image-stack fade-up">
-          <div class="about-img-main">
-            {page?.aboutMainImage
-              ? <img src={urlFor(page.aboutMainImage).width(600).url()} alt="Kosmos Lodge view">
-              : <img src="/assets/images/gallery/IMG_5839.jpg" alt="Kosmos Lodge view">}
-          </div>
-          <div class="about-img-accent">
-            {page?.aboutAccentImage
-              ? <img src={urlFor(page.aboutAccentImage).width(300).url()} alt="Lodge detail">
-              : <img src="/assets/images/gallery/IMG_5812.jpg" alt="Lodge detail">}
-          </div>
-          <div class="about-stat">
-            <span class="num">{page?.establishedYear ?? 2015}</span>
-            <span class="lbl">Est.</span>
-          </div>
-        </div>
-        <div class="about-text fade-up">
-          <div class="section-label">{page?.aboutLabel ?? 'Our Story'}</div>
-          <h2>{page?.aboutHeading ?? "Traveller's Choice in Hartbeespoort"}</h2>
-          {(page?.aboutParagraphs ?? []).map((p: string) => <p>{p}</p>)}
-          <div class="accordion-list">
-            {(page?.accordionItems ?? []).map((item: any) => (
-              <div class="accordion-item">
-                <button class="accordion-trigger">
-                  {item.title}
-                  <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
-                </button>
-                <div class="accordion-body">
-                  <div class="accordion-body-inner">{item.body}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <a href="/#contact" class="btn btn-primary">
-            <i class="fas fa-paper-plane"></i> Get in Touch
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Rooms Preview -->
   <section class="rooms-section" id="rooms">
     <div class="container">
@@ -274,6 +229,51 @@ const faqs = [
       </div>
       <div class="gallery-footer">
         <a href="/#contact" class="btn btn-ghost"><i class="fas fa-images"></i> Book Your Stay</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section / Our Story -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image-stack fade-up">
+          <div class="about-img-main">
+            {page?.aboutMainImage
+              ? <img src={urlFor(page.aboutMainImage).width(600).url()} alt="Kosmos Lodge view">
+              : <img src="/assets/images/gallery/IMG_5839.jpg" alt="Kosmos Lodge view">}
+          </div>
+          <div class="about-img-accent">
+            {page?.aboutAccentImage
+              ? <img src={urlFor(page.aboutAccentImage).width(300).url()} alt="Lodge detail">
+              : <img src="/assets/images/gallery/IMG_5812.jpg" alt="Lodge detail">}
+          </div>
+          <div class="about-stat">
+            <span class="num">{page?.establishedYear ?? 2015}</span>
+            <span class="lbl">Est.</span>
+          </div>
+        </div>
+        <div class="about-text fade-up">
+          <div class="section-label">{page?.aboutLabel ?? 'Our Story'}</div>
+          <h2>{page?.aboutHeading ?? "Traveller's Choice in Hartbeespoort"}</h2>
+          {(page?.aboutParagraphs ?? []).map((p: string) => <p>{p}</p>)}
+          <div class="accordion-list">
+            {(page?.accordionItems ?? []).map((item: any) => (
+              <div class="accordion-item">
+                <button class="accordion-trigger">
+                  {item.title}
+                  <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
+                </button>
+                <div class="accordion-body">
+                  <div class="accordion-body-inner">{item.body}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <a href="/#contact" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Get in Touch
+          </a>
+        </div>
       </div>
     </div>
   </section>
