@@ -425,7 +425,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 /* ================================================================
    ROOMS SECTION (homepage preview)
    ================================================================ */
-.rooms-section { padding: 7rem 0; background: var(--dark); position: relative; overflow: clip; }
+.rooms-section { padding: 7rem 0 3.5rem; background: var(--dark); position: relative; overflow: clip; }
 /* Gold glow that continues the reviews-section glow upward across the seam, but
    sits BELOW the room cards. Rendered inside the rooms section's own stacking
    context (z-index:0) so it paints above the dark background yet under the cards
@@ -1421,7 +1421,7 @@ select:focus-visible {
    cream cards carry the quotes. Marquee loops via a duplicated track.
    ================================================================ */
 .reviews-section {
-  padding: 7rem 0;
+  padding: 3.5rem 0 7rem;
   background: var(--dark);
   position: relative;
   /* Fully contain the glow blobs inside this band — they must NOT spill up into
