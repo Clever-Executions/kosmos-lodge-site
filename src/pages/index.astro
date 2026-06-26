@@ -174,7 +174,8 @@ const faqs = [
         <a href="/rooms" class="btn btn-ghost">View All Rooms <i class="fas fa-arrow-right"></i></a>
       </div>
       <div class="rooms-grid">
-        {(rooms ?? []).map((room: any) => (
+        {/* Show six rooms here (two clean rows); the full seven live on /rooms. */}
+        {(rooms ?? []).slice(0, 6).map((room: any) => (
           <div class="room-card fade-up">
             <div class="room-card-img">
               {room.cardImage
