@@ -1008,7 +1008,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 }
 @media (max-width: 480px) {
   .amenities-grid { grid-template-columns: 1fr; }
-  .room-photo-gallery { grid-template-columns: 1fr; }
+  .room-photo-gallery { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ================================================================
@@ -1069,28 +1069,100 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   .nav-menu.open { right: 0; }
   .nav-menu a { width: 100%; padding: .75rem 1rem; border-radius: var(--radius); }
   .nav-toggle  { display: flex; z-index: 999; }
+
+  /* ── Mobile rhythm: tighten the very tall desktop section padding so the page
+     reads as a flowing showcase rather than one full-screen block at a time. ── */
+  .about-section, .rooms-section, .reviews-section, .gallery-section,
+  .explore-section, .awards-section, .location-section, .faq-section,
+  .contact-section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+  .rooms-page-section, .explore-page-section, .specials-page-section,
+  .room-detail-section, .explore-detail-section { padding-top: 2.5rem; padding-bottom: 3.5rem; }
+  .section-header { margin-bottom: 1.75rem; }
+
   .features-grid { grid-template-columns: repeat(2, 1fr); }
   .about-grid  { grid-template-columns: 1fr; gap: 3rem; }
   .about-image-stack { padding-right: 0; padding-bottom: 4rem; }
   .about-img-accent { right: 0; }
   .about-stat   { right: 0; }
-  .rooms-grid   { grid-template-columns: 1fr; }
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 160px; }
-  .gallery-item:nth-child(1), .gallery-item:nth-child(6) { grid-column: span 1; grid-row: span 1; }
-  .explore-grid { grid-template-columns: 1fr; }
+
+  /* Card collections stay 2-up on phones/tablets — never one card per screen.
+     (The ≤1100px rules already set these to 2 columns; we simply keep them
+     instead of collapsing to a single column.) */
+  .rooms-grid,
+  .explore-grid,
+  .rooms-nav-grid,
+  .explore-cards-grid,
+  .specials-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+
+  /* Gallery keeps a 2-up mosaic with a featured lead photo for editorial rhythm. */
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 150px; gap: .6rem; }
+  .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+  .gallery-item:nth-child(6) { grid-column: span 2; grid-row: span 1; }
+
   .contact-grid { grid-template-columns: 1fr; }
   .form-row     { grid-template-columns: 1fr; }
-  .rooms-nav-grid { grid-template-columns: 1fr; }
-  .explore-cards-grid { grid-template-columns: 1fr; }
-  .specials-grid { grid-template-columns: 1fr; }
   .rooms-footer  { flex-direction: column; align-items: flex-start; }
   .specials-cta-bar { flex-direction: column; align-items: flex-start; }
 }
 @media (max-width: 480px) {
-  .features-grid { grid-template-columns: 1fr; }
+  /* Roomier gutters on phones so two cards per row breathe. */
+  .container { padding: 0 1rem; }
   .hero-actions  { flex-direction: column; align-items: center; }
-  .gallery-grid  { grid-template-columns: 1fr; grid-auto-rows: 220px; }
   .top-bar .container { justify-content: center; text-align: center; }
+
+  /* Keep multi-up grids — the whole point of the mobile overhaul. */
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .gallery-grid  { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 124px; gap: .5rem; }
+  .rooms-grid,
+  .explore-grid,
+  .rooms-nav-grid,
+  .explore-cards-grid,
+  .specials-grid { gap: .7rem; }
+
+  /* Compact feature cards (icon + label) for a tight 2-up "at a glance" strip. */
+  .feature-card { padding: 1.5rem .75rem; }
+  .feature-icon { width: 44px; height: 44px; font-size: 1.1rem; }
+
+  /* ── Room cards: condense the body so two fit comfortably side by side ── */
+  .room-card-body { padding: .85rem; }
+  .room-card-body h3 { font-size: .85rem; }
+  .room-card-body p {
+    font-size: .75rem; line-height: 1.45; margin-bottom: .85rem;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .room-card-footer { flex-direction: column; align-items: stretch; gap: .55rem; }
+  .room-card-footer .btn { width: 100%; justify-content: center; }
+  .room-tags { gap: .3rem; }
+  .room-tag { font-size: .6rem; padding: .15rem .5rem; }
+
+  /* Rooms page nav cards: stack the title/arrow row so it fits a narrow card. */
+  .room-nav-body { padding: .85rem .9rem; flex-direction: column; align-items: flex-start; gap: .35rem; }
+  .room-nav-body h3 { font-size: .85rem; }
+
+  /* ── Explore overlay tiles (homepage): square tiles read better 2-up ── */
+  .explore-card { aspect-ratio: 1 / 1; }
+  .explore-overlay { padding: .85rem; }
+  .explore-overlay h3 { font-size: .82rem; }
+  .explore-overlay p {
+    font-size: .7rem; line-height: 1.4; margin-bottom: .5rem;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .explore-num, .explore-full-card-num { font-size: .6rem; padding: .16rem .5rem; top: .6rem; left: .6rem; }
+  .explore-link { font-size: .72rem; }
+
+  /* Explore page full cards (image + body). */
+  .explore-full-card-body { padding: .85rem; }
+  .explore-full-card-body h3 { font-size: .85rem; }
+  .explore-full-card-body p {
+    font-size: .74rem; line-height: 1.5; margin-bottom: .85rem;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .explore-full-card-body .btn { width: 100%; justify-content: center; }
+
+  /* Specials cards: stack the caption + button. */
+  .special-card-cta { flex-direction: column; align-items: stretch; gap: .55rem; padding: .85rem .9rem; }
+  .special-card-cta p { font-size: .74rem; }
+  .special-card-cta .btn { width: 100%; justify-content: center; }
 }
 
 /* ================================================================
@@ -1556,7 +1628,12 @@ select:focus-visible {
 .review-card-source { margin-left: auto; color: var(--green); font-size: 1.05rem; }
 
 @media (max-width: 720px) {
-  .reviews-stats { grid-template-columns: 1fr; max-width: 360px; }
+  /* Keep the three proof figures together as a compact band — stacking them
+     made each tiny stat eat a whole screen. */
+  .reviews-stats { grid-template-columns: repeat(3, 1fr); gap: .55rem; max-width: 100%; }
+  .review-stat { padding: 1.1rem .5rem; }
+  .review-stat-sub { font-size: .72rem; }
+  .review-stat-label { font-size: .66rem; }
   /* Slightly narrower cards and a much slower scroll so a card stays on a small
      screen long enough to actually be read before it passes. Tap-and-hold pauses
      it (see .reviews-marquee:active rule above). */
