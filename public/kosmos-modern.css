@@ -425,7 +425,27 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
 /* ================================================================
    ROOMS SECTION (homepage preview)
    ================================================================ */
-.rooms-section { padding: 7rem 0; background: var(--dark); }
+.rooms-section { padding: 7rem 0; background: var(--dark); position: relative; overflow: clip; }
+/* Gold glow that continues the reviews-section glow upward across the seam, but
+   sits BELOW the room cards. Rendered inside the rooms section's own stacking
+   context (z-index:0) so it paints above the dark background yet under the cards
+   (which are lifted to z-index:1 below). Anchored to the bottom-left so it lines
+   up with the reviews gold glow directly beneath it. */
+.rooms-section::after {
+  content: '';
+  position: absolute;
+  bottom: -240px; left: -240px;
+  width: 720px; height: 520px;
+  background: var(--gold);
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: .14;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Lift the actual content above the glow so it never washes over the cards. */
+.rooms-section .section-header,
+.rooms-section .rooms-grid { position: relative; z-index: 1; }
 .section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem; }
 .section-header h2 { font-family: 'Cinzel', serif; font-size: clamp(1.8rem, 3.5vw, 2.6rem); color: #fff; margin-bottom: .4rem; }
 .section-header p { color: rgba(255,255,255,.55); font-size: .9rem; line-height: 1.6; max-width: 420px; }
