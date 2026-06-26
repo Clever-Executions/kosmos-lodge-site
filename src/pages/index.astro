@@ -90,7 +90,6 @@ const faqs = [
     <div class="hero-bg" style={`background-image:url('${page?.heroImage ? urlFor(page.heroImage).width(1920).url() : '/assets/images/hero-bg.jpg'}')`}></div>
     <div class="hero-overlay"></div>
     <div class="hero-content">
-      <div class="hero-badge">{page?.heroBadge ?? 'Magaliesberg, Hartbeespoort'}</div>
       <h1 set:html={page?.heroHeading ? page.heroHeading.replace(/\\n/g, '<br>') : 'Where Luxury Meets<br><em>The Dam Views</em>'}></h1>
       <p>{page?.heroSubheading ?? 'Spend a luxurious weekend in an exclusive little private lodge, situated in the Magaliesberg mountain village of Kosmos, overlooking the Hartbeespoort Dam.'}</p>
       <div class="hero-actions">

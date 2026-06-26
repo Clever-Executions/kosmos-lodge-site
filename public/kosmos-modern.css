@@ -1239,17 +1239,21 @@ select:focus-visible {
    Added for local-search visibility and AI-friendly Q&A content.
    ================================================================ */
 .location-section { padding: 5.5rem 0; background: var(--white); }
-.location-section .section-header { margin-bottom: 1.5rem; }
+/* Single, tight gap between the heading and the map — no doubled margins, and
+   the grid stretches both columns to equal height so the map fills the row
+   instead of sitting short with empty space around it. */
+.location-section .section-header { margin-bottom: 1rem; }
 .location-grid {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
   gap: 2.5rem;
-  align-items: start;
-  margin-top: 1.5rem;
+  align-items: stretch;
+  margin-top: 0;
 }
 .location-map {
   position: relative;
   min-height: 360px;
+  height: 100%;
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -1337,13 +1341,15 @@ select:focus-visible {
   pointer-events: none;
   z-index: 0;
 }
-/* Gold: wide and pulled well above the top edge so it washes up into the
-   rooms section and there is no visible border between the two dark bands. */
+/* Gold: anchored to the LEFT of the band and pulled above the top edge so it
+   washes up into the rooms section without a visible seam between the two dark
+   bands. Sits on the glow layer (z-index:0) — every review element renders
+   above it (z-index:2 below). */
 .reviews-section::before {
   background: var(--gold);
   width: 720px; height: 520px;
-  top: -300px; left: 50%;
-  transform: translateX(-50%);
+  top: -300px; left: -200px;
+  transform: none;
   opacity: .2;
 }
 .reviews-section::after {
@@ -1352,8 +1358,8 @@ select:focus-visible {
   bottom: -180px; right: -120px;
   opacity: .16;
 }
-/* Keep the content above the glow layer. */
-.reviews-head, .reviews-stats, .reviews-marquee { z-index: 1; }
+/* Keep every review element above the glow layer (glow is z-index:0). */
+.reviews-head, .reviews-stats, .reviews-marquee { position: relative; z-index: 2; }
 
 .reviews-head {
   position: relative;
@@ -1453,9 +1459,11 @@ select:focus-visible {
   animation: reviewScroll 55s linear infinite;
   will-change: transform;
 }
-/* Pause when a guest hovers or tabs into the strip, so they can read. */
-.reviews-marquee:hover .reviews-track,
-.reviews-track:focus-within { animation-play-state: paused; }
+/* Pause only on deliberate interaction — keyboard focus or an active press/touch.
+   A passive :hover pause was firing whenever the page scrolled the strip under a
+   stationary cursor, which read as the carousel "randomly stopping". */
+.reviews-track:focus-within,
+.reviews-marquee:active .reviews-track { animation-play-state: paused; }
 
 @keyframes reviewScroll {
   from { transform: translateX(0); }
@@ -1524,7 +1532,17 @@ select:focus-visible {
 
 @media (max-width: 720px) {
   .reviews-stats { grid-template-columns: 1fr; max-width: 360px; }
-  .review-card { flex-basis: 300px; width: 300px; }
+  /* Slightly narrower cards and a much slower scroll so a card stays on a small
+     screen long enough to actually be read before it passes. Tap-and-hold pauses
+     it (see .reviews-marquee:active rule above). */
+  .review-card {
+    flex-basis: 82vw;
+    width: 82vw;
+    max-width: 330px;
+    padding: 1.6rem 1.5rem;
+  }
+  .review-card-quote { font-size: 1.08rem; }
+  .reviews-track { animation-duration: 95s; }
 }
 
 /* Reduced motion: stop the marquee, show the real reviews as a static,
