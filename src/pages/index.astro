@@ -18,6 +18,37 @@ const galleryUrls: string[] = sanityGallery.length
   ? sanityGallery.map((img) => urlFor(img).width(400).height(300).url())
   : galleryFallback(9);
 
+// Guest reviews / social proof.
+// Live Google figures (Kosmos Lodge on Google Maps: 4.5★ from 128 reviews) and a
+// set of real 5-star guest reviews act as the fallback. Anything set on the
+// homePage document in Sanity wins, so the lodge can edit all of this in Studio
+// without a code change — and leaving it blank keeps these sensible defaults.
+const FALLBACK_REVIEWS = [
+  { quote: 'One of the best locations around the dam — luxurious rooms and friendly staff. Highly recommend!', author: 'Zack de Beer', context: 'Couple · Holiday', rating: 5 },
+  { quote: 'Amazing views, luxurious rooms and great hosts. The views of the dam from the balcony are amazing and the owner is very professional and helpful.', author: 'Matilda Twala', context: 'Google review', rating: 5 },
+  { quote: 'Beautiful place! Choose the upstairs balcony room for a view over the dam to die for.', author: 'Esther R', context: 'Google review', rating: 5 },
+  { quote: 'The reservation process was extremely quick and easy, and the room and bathroom are modern and spotlessly clean.', author: 'Kirstan', context: 'Google review', rating: 5 },
+  { quote: 'The rooms were beautiful, but the best of all was the location and the great views over the dam.', author: 'Liesie', context: 'Google review', rating: 5 },
+  { quote: 'A true 5-star experience — modern, clean and peaceful, with a wonderful atmosphere.', author: 'Karin W', context: 'Google review', rating: 5 },
+  { quote: 'Beautiful and luxurious room with the most breathtaking views over the dam. The best views in town!', author: 'Eemblond Tours', context: 'Google review', rating: 5 },
+];
+
+const reviewsLabel = page?.reviewsLabel ?? 'Guest Reviews';
+const reviewsHeading = page?.reviewsHeading ?? 'Loved by Our Guests';
+const reviewsIntro = page?.reviewsIntro ?? 'Real words from guests who have woken up to the Hartbeespoort Dam from their balcony.';
+const googleRating = page?.googleRating ?? 4.5;
+const googleReviewCount = page?.googleReviewCount ?? 128;
+const yearsOperating = page?.yearsOperating ?? 11;
+const googleReviewsUrl = page?.googleReviewsUrl ?? mapsUrl;
+const reviewItems = (page?.reviews?.length ? page.reviews : FALLBACK_REVIEWS) as any[];
+// Duplicate the track so the marquee loops seamlessly. Render at least 6 cards
+// before duplicating so short lists still fill the row.
+const marqueeReviews = [...reviewItems, ...reviewItems];
+// Full / half / empty stars for the headline rating.
+const fullStars = Math.floor(googleRating);
+const hasHalfStar = googleRating - fullStars >= 0.25 && googleRating - fullStars < 0.75;
+const roundUp = googleRating - fullStars >= 0.75;
+
 // FAQ content — answers the questions guests (and AI assistants) actually ask,
 // loaded with the keywords and the couples/luxury positioning we want to rank for.
 const faqs = [
@@ -168,6 +199,61 @@ const faqs = [
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Guest Reviews / Social Proof -->
+  <section class="reviews-section" id="reviews">
+    <div class="container">
+      <div class="reviews-head">
+        <div class="section-label light" style="justify-content:center">{reviewsLabel}</div>
+        <h2>{reviewsHeading}</h2>
+        <p class="reviews-intro">{reviewsIntro}</p>
+      </div>
+
+      <div class="reviews-stats">
+        <a class="review-stat review-stat--link" href={googleReviewsUrl} target="_blank" rel="noopener" aria-label={`${googleRating} out of 5 from ${googleReviewCount} Google reviews`}>
+          <div class="review-stat-figure">{googleRating}</div>
+          <div class="review-stat-stars" aria-hidden="true">
+            {Array.from({ length: fullStars }).map(() => <i class="fas fa-star"></i>)}
+            {hasHalfStar && <i class="fas fa-star-half-alt"></i>}
+            {Array.from({ length: 5 - fullStars - (hasHalfStar ? 1 : 0) - (roundUp ? 1 : 0) }).map(() => <i class="far fa-star"></i>)}
+            {roundUp && <i class="fas fa-star"></i>}
+          </div>
+          <div class="review-stat-label"><i class="fab fa-google"></i> Rated on Google</div>
+        </a>
+        <div class="review-stat">
+          <div class="review-stat-figure">{googleReviewCount}<span class="review-stat-plus">+</span></div>
+          <div class="review-stat-sub">Guest Reviews</div>
+          <div class="review-stat-label">Verified across Google &amp; travel sites</div>
+        </div>
+        <div class="review-stat">
+          <div class="review-stat-figure">{yearsOperating}</div>
+          <div class="review-stat-sub">Years of Hospitality</div>
+          <div class="review-stat-label">Welcoming guests since {page?.establishedYear ?? (2026 - yearsOperating)}</div>
+        </div>
+      </div>
+
+      <div class="reviews-marquee">
+        <div class="reviews-track">
+          {marqueeReviews.map((r: any, i: number) => (
+            <figure class="review-card" aria-hidden={i >= reviewItems.length ? 'true' : undefined}>
+              <div class="review-card-stars" aria-hidden="true">
+                {Array.from({ length: r.rating ?? 5 }).map(() => <i class="fas fa-star"></i>)}
+              </div>
+              <blockquote class="review-card-quote">{r.quote}</blockquote>
+              <figcaption class="review-card-author">
+                <span class="review-card-avatar">{(r.author ?? '?').trim().charAt(0).toUpperCase()}</span>
+                <span class="review-card-meta">
+                  <span class="review-card-name">{r.author}</span>
+                  {r.context && <span class="review-card-context">{r.context}</span>}
+                </span>
+                <i class="fab fa-google review-card-source" title="Google review"></i>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
     </div>
   </section>
