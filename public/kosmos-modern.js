@@ -245,7 +245,9 @@
         dot.addEventListener('click', function () { goTo(i); restart(); });
         dotsWrap.appendChild(dot);
       });
-      marquee.appendChild(dotsWrap);
+      // Insert AFTER the marquee (as a sibling, not a child) so the active
+      // dot's scale transform isn't clipped by .reviews-marquee's overflow:hidden.
+      marquee.insertAdjacentElement('afterend', dotsWrap);
     }
 
     // A direct jump to a real card (dot taps). Always lands on a genuine slot,
@@ -279,6 +281,7 @@
       ensureClone();
       if (!dotsWrap) buildDots();
       marquee.classList.add('reviews-marquee--steps');
+      if (dotsWrap) dotsWrap.style.display = 'flex';
       idx = 0;
       sliding = false;
       setX(0, false);
@@ -290,6 +293,7 @@
       stop();
       sliding = false;
       marquee.classList.remove('reviews-marquee--steps');
+      if (dotsWrap) dotsWrap.style.display = '';
       cards.forEach(function (c) { c.classList.remove('is-active'); });
       // Hand transform control back to the desktop marquee animation.
       track.style.transition = '';

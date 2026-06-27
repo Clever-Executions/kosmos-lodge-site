@@ -1679,8 +1679,11 @@ select:focus-visible {
           backface-visibility: hidden;
 }
 /* Only the genuine reviews take part in the slideshow — hide the marquee's
-   duplicate copies so each step lands on an exact 100% boundary. */
-.reviews-marquee--steps .review-card[aria-hidden="true"] {
+   duplicate copies so each step lands on an exact 100% boundary.
+   The JS-added trailing clone (.review-card--clone) also carries aria-hidden
+   but must remain visible so the seamless forward loop has a real card to
+   slide onto before snapping back to the first. */
+.reviews-marquee--steps .review-card[aria-hidden="true"]:not(.review-card--clone) {
   display: none;
 }
 .reviews-marquee--steps .review-card {
@@ -1690,14 +1693,17 @@ select:focus-visible {
   margin: 0;
 }
 
-/* Position dots — JS-generated, shown only in stepper mode. */
+/* Position dots — JS-generated, shown only in stepper mode.
+   Appended AFTER (not inside) .reviews-marquee so the active dot's scale
+   transform isn't clipped by .reviews-marquee's overflow:hidden. JS
+   sets display:flex / display:none directly instead of relying on a
+   descendant selector. */
 .reviews-dots {
   display: none;
   justify-content: center;
   gap: .55rem;
   margin-top: 1.6rem;
 }
-.reviews-marquee--steps .reviews-dots { display: flex; }
 .reviews-dot {
   width: 8px; height: 8px;
   padding: 0;
