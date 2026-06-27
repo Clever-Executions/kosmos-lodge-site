@@ -196,11 +196,16 @@
     var dotsWrap = null;
     var clone    = null;
 
-    // Exact rendered width of one slide. In stepper mode every genuine card is a
-    // full-width slot, so any card's box width is the per-step pixel offset. We
-    // measure the real card (not marquee.clientWidth) so container padding or the
-    // mask never desyncs the step from the card.
-    function stepWidth() { return cards[0].getBoundingClientRect().width; }
+    // Exact per-step pixel distance. Cards are now narrower than the viewport
+    // (to show a peek of the next card) with a CSS gap between them, so the step
+    // = cardWidth + gap. Measuring left-edge of card[1] minus left-edge of card[0]
+    // captures both in one shot — robust to any CSS layout change.
+    function stepWidth() {
+      if (cards.length > 1) {
+        return cards[1].getBoundingClientRect().left - cards[0].getBoundingClientRect().left;
+      }
+      return cards[0].getBoundingClientRect().width;
+    }
 
     // Move the track. `animate` true → let the CSS transition glide it; false →
     // jump with no transition (used for the seamless wrap and on resize).
