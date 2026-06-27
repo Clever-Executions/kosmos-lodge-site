@@ -165,36 +165,47 @@
      On desktop the reviews strip is a continuous CSS marquee. On phones that
      reads poorly, so we switch it into a native scroll-snap carousel: one card
      snaps into the centre, the user can swipe with full momentum physics, and
-     an auto-advance timer scrolls to the next card every few seconds. */
+     an auto-advance timer scrolls to the next card only when the user hasn't
+     touched the carousel in the last DWELL ms.
+
+     The HTML track contains 2N cards (N originals + N aria-hidden duplicates).
+     In step mode we show ALL 2N cards so the user can swipe past the last
+     original into the duplicate set (identical content) before the JS silently
+     resets the scroll position to the equivalent original card — creating a
+     seamless forward loop. */
   (function () {
     var marquee = document.querySelector('.reviews-marquee');
     var track   = marquee && marquee.querySelector('.reviews-track');
     if (!marquee || !track) return;
 
-    var cards = Array.prototype.slice.call(
-      track.querySelectorAll('.review-card:not([aria-hidden="true"])')
-    );
-    if (cards.length < 2) return;
+    // N = unique reviews; allCards = N originals + N duplicates (aria-hidden).
+    var allCards  = Array.prototype.slice.call(track.querySelectorAll('.review-card'));
+    var origCards = allCards.filter(function (c) { return c.getAttribute('aria-hidden') !== 'true'; });
+    var N = origCards.length;
+    if (N < 2) return;
 
     var small  = window.matchMedia('(max-width: 720px)');
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    var DWELL = 4000; // ms each card rests before auto-advancing
+    var DWELL = 4000; // ms of user inactivity before auto-advance fires
 
-    var idx      = 0;
-    var timer    = null;
-    var dotsWrap = null;
+    var idx           = 0;
+    var timer         = null;
+    var dotsWrap      = null;
+    var lastTouchTime = -Infinity; // timestamp of most recent touch interaction
+    var jumping       = false;     // true while silently resetting scroll position
 
-    // Per-step scroll distance = card width + gap. Use offsetWidth + columnGap
-    // so the measurement doesn't depend on scroll position.
     function stepWidth() {
       var gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
-      return cards[0].offsetWidth + gap;
+      return (allCards[0] ? allCards[0].offsetWidth : 0) + gap;
     }
 
+    // Dots always show the position within the original N cards.
+    function dotIndex() { return ((idx % N) + N) % N; }
+
     function paintDots() {
-      var active = ((idx % cards.length) + cards.length) % cards.length;
-      cards.forEach(function (c, i) { c.classList.toggle('is-active', i === active); });
+      var active = dotIndex();
+      origCards.forEach(function (c, i) { c.classList.toggle('is-active', i === active); });
       if (dotsWrap) {
         dotsWrap.querySelectorAll('.reviews-dot').forEach(function (d, i) {
           d.classList.toggle('is-active', i === active);
@@ -205,57 +216,112 @@
     function buildDots() {
       dotsWrap = document.createElement('div');
       dotsWrap.className = 'reviews-dots';
-      cards.forEach(function (_, i) {
+      origCards.forEach(function (_, i) {
         var dot = document.createElement('button');
         dot.type = 'button';
         dot.className = 'reviews-dot';
         dot.setAttribute('aria-label', 'Show review ' + (i + 1));
-        dot.addEventListener('click', function () { goTo(i); restart(); });
+        dot.addEventListener('click', function () {
+          lastTouchTime = Date.now();
+          goTo(i);
+          scheduleNext();
+        });
         dotsWrap.appendChild(dot);
       });
-      // Sibling of the marquee so overflow:hidden can't clip the active dot.
+      // Sibling of the marquee so overflow on the marquee can't clip the active dot.
       marquee.insertAdjacentElement('afterend', dotsWrap);
     }
 
+    // Instantly set scroll position without triggering a smooth animation.
+    function jumpTo(left) {
+      jumping = true;
+      track.style.scrollBehavior = 'auto';
+      track.scrollLeft = left;
+      // Force style flush so the next smooth scroll starts from the new position.
+      track.getBoundingClientRect();
+      track.style.scrollBehavior = '';
+      jumping = false;
+    }
+
     function goTo(i) {
-      idx = ((i % cards.length) + cards.length) % cards.length;
+      idx = ((i % N) + N) % N;
       track.scrollTo({ left: idx * stepWidth(), behavior: 'smooth' });
       paintDots();
     }
 
     function advance() {
-      var next = (idx + 1) % cards.length;
-      if (next === 0) {
-        // Wrap: jump instantly to the start (user isn't touching during auto-advance).
-        track.scrollLeft = 0;
-        idx = 0;
+      var next = (idx + 1) % N;
+      if (next === 0 && allCards.length > N) {
+        // Wrap: scroll to card N (first duplicate — identical content to card 0)
+        // using the same smooth animation as a normal advance, then silently reset
+        // to position 0. The user sees a continuous forward scroll, not a jump.
+        idx = N;
+        track.scrollTo({ left: N * stepWidth(), behavior: 'smooth' });
+        paintDots(); // dotIndex(): N % N === 0, so dot 0 lights up
+        window.setTimeout(function () {
+          jumpTo(0);
+          idx = 0;
+          paintDots();
+        }, 480); // wait for the smooth-scroll animation to finish
       } else {
         idx = next;
         track.scrollTo({ left: idx * stepWidth(), behavior: 'smooth' });
+        paintDots();
       }
-      paintDots();
+      scheduleNext();
     }
 
-    function restart() { stop(); timer = window.setInterval(advance, DWELL); }
-    function stop()    { if (timer) { clearInterval(timer); timer = null; } }
+    function scheduleNext() {
+      if (timer) clearTimeout(timer);
+      timer = window.setTimeout(function () {
+        // Only fire if the carousel hasn't been touched in the last DWELL ms.
+        if (Date.now() - lastTouchTime >= DWELL) {
+          advance();
+        } else {
+          // User touched recently — wait until they've been idle for a full DWELL period.
+          var remaining = DWELL - (Date.now() - lastTouchTime);
+          timer = window.setTimeout(advance, Math.max(remaining, 200));
+        }
+      }, DWELL);
+    }
+
+    function stop() { if (timer) { clearTimeout(timer); timer = null; } }
 
     // Keep dots in sync when the user swipes manually.
     var scrollRAF = null;
     function onScroll() {
-      if (scrollRAF) return;
+      if (jumping || scrollRAF) return;
       scrollRAF = requestAnimationFrame(function () {
         scrollRAF = null;
         var sw = stepWidth();
         if (!sw) return;
-        var newIdx = Math.round(track.scrollLeft / sw);
-        newIdx = Math.max(0, Math.min(newIdx, cards.length - 1));
-        if (newIdx !== idx) { idx = newIdx; paintDots(); }
+        var ci = Math.round(track.scrollLeft / sw);
+        ci = Math.max(0, Math.min(ci, allCards.length - 1));
+        idx = ci;
+        paintDots();
       });
     }
 
+    function onTouchStart() {
+      lastTouchTime = Date.now();
+    }
+
     function onTouchEnd() {
-      // Brief pause so the snap settles, then resume auto-advance.
-      window.setTimeout(restart, 1500);
+      lastTouchTime = Date.now();
+      // After the snap animation settles, silently reset if the user swiped
+      // into the duplicate zone — making the loop seamless for the next swipe.
+      window.setTimeout(function () {
+        if (jumping) return;
+        var sw = stepWidth();
+        if (!sw) return;
+        var ci = Math.round(track.scrollLeft / sw);
+        if (ci >= N && ci < allCards.length) {
+          var equiv = ci - N;
+          jumpTo(equiv * sw);
+          idx = equiv;
+          paintDots();
+        }
+      }, 350);
     }
 
     function enable() {
@@ -266,21 +332,21 @@
       idx = 0;
       track.scrollLeft = 0;
       paintDots();
-      track.addEventListener('scroll',     onScroll,    { passive: true });
-      track.addEventListener('touchstart', stop,         { passive: true });
-      track.addEventListener('touchend',   onTouchEnd,  { passive: true });
-      restart();
+      track.addEventListener('scroll',     onScroll,     { passive: true });
+      track.addEventListener('touchstart', onTouchStart, { passive: true });
+      track.addEventListener('touchend',   onTouchEnd,   { passive: true });
+      scheduleNext();
     }
 
     function disable() {
       if (!marquee.classList.contains('reviews-marquee--steps')) return;
       stop();
       track.removeEventListener('scroll',     onScroll);
-      track.removeEventListener('touchstart', stop);
+      track.removeEventListener('touchstart', onTouchStart);
       track.removeEventListener('touchend',   onTouchEnd);
       marquee.classList.remove('reviews-marquee--steps');
       if (dotsWrap) dotsWrap.style.display = '';
-      cards.forEach(function (c) { c.classList.remove('is-active'); });
+      origCards.forEach(function (c) { c.classList.remove('is-active'); });
       track.scrollLeft = 0;
     }
 
@@ -297,7 +363,7 @@
 
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) stop();
-      else if (marquee.classList.contains('reviews-marquee--steps')) restart();
+      else if (marquee.classList.contains('reviews-marquee--steps')) scheduleNext();
     });
 
     // On rotation/resize: re-snap to current card without animation since
@@ -307,7 +373,7 @@
       if (!marquee.classList.contains('reviews-marquee--steps')) return;
       if (resizeRAF) cancelAnimationFrame(resizeRAF);
       resizeRAF = requestAnimationFrame(function () {
-        track.scrollLeft = idx * stepWidth();
+        jumpTo(idx * stepWidth());
       });
     });
   })();

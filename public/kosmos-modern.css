@@ -1438,8 +1438,10 @@ select:focus-visible {
   background: var(--dark);
   position: relative;
   /* Fully contain the glow blobs inside this band — they must NOT spill up into
-     the rooms section above (the gold was washing over the room cards). */
+     the rooms section above or leak below. clip-path: inset(0) is used for
+     cross-browser support (overflow: clip alone falls back to visible on iOS ≤15). */
   overflow: clip;
+  clip-path: inset(0);
 }
 /* Soft gold + emerald glows so the dark band doesn't read as flat, and so the
    warm glow continues seamlessly out of the rooms section above. */
@@ -1678,7 +1680,9 @@ select:focus-visible {
    every few seconds. The JS adds .reviews-marquee--steps (only on small screens,
    never under reduced motion), so these styles stay dormant on desktop. */
 .reviews-marquee--steps {
-  overflow: hidden;
+  /* overflow: clip (not hidden) so iOS doesn't block touch-scroll on the child
+     track element. clip-path on the section contains any visual overflow. */
+  overflow: clip;
   /* Break out of the .container's horizontal padding so the carousel spans
      the full viewport width. The section has overflow:clip so no h-scroll. */
   margin: 0 -1.5rem;
@@ -1702,10 +1706,10 @@ select:focus-visible {
   -ms-overflow-style: none;     /* IE/Edge */
 }
 .reviews-marquee--steps .reviews-track::-webkit-scrollbar { display: none; }
-/* Hide the desktop marquee's aria-hidden duplicate cards in stepper mode. */
-.reviews-marquee--steps .review-card[aria-hidden="true"] {
-  display: none;
-}
+/* Duplicate cards (aria-hidden="true") stay visible in stepper mode so the
+   carousel can scroll seamlessly past the last card into the duplicate set
+   before the JS silently resets the scroll position. Screen readers already
+   ignore them via aria-hidden. */
 .reviews-marquee--steps .review-card {
   /* 82vw: narrow enough to show a peek of the next card on either side. */
   flex: 0 0 82vw;
