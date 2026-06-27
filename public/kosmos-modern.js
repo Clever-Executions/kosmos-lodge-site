@@ -173,7 +173,7 @@
     if (!marquee || !track) return;
 
     // The marquee duplicates its cards (the copies carry aria-hidden) so the
-    // loop is seamless; the stepper only cycles the genuine reviews.
+    // desktop loop is seamless; the stepper only cycles the genuine reviews.
     var cards = Array.prototype.slice.call(
       track.querySelectorAll('.review-card:not([aria-hidden="true"])')
     );
@@ -181,9 +181,58 @@
 
     var small   = window.matchMedia('(max-width: 720px)');
     var reduce  = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var idx     = 0;
-    var timer   = null;
+
+    var DWELL = 4000; // ms each review rests on screen
+    var SLIDE = 600;  // ms slide duration — MUST match the CSS transition below
+
+    // idx runs 0..cards.length. The last slot (cards.length) is a clone of the
+    // first review appended after the genuine cards: we always step FORWARD onto
+    // it, then — once that slide finishes — snap silently back to the real first
+    // card. That gives an endless one-directional glide with no backward "rewind"
+    // sweep through every card (the old 5→0 jump was the glitchy rapid motion).
+    var idx      = 0;
+    var timer    = null;
+    var sliding  = false;
     var dotsWrap = null;
+    var clone    = null;
+
+    // Exact rendered width of one slide. In stepper mode every genuine card is a
+    // full-width slot, so any card's box width is the per-step pixel offset. We
+    // measure the real card (not marquee.clientWidth) so container padding or the
+    // mask never desyncs the step from the card.
+    function stepWidth() { return cards[0].getBoundingClientRect().width; }
+
+    // Move the track. `animate` true → let the CSS transition glide it; false →
+    // jump with no transition (used for the seamless wrap and on resize).
+    function setX(px, animate) {
+      if (!animate) {
+        track.style.transition = 'none';
+        track.style.transform = 'translate3d(' + px + 'px,0,0)';
+        void track.offsetWidth; // force reflow so the jump applies before we…
+        track.style.transition = ''; // …restore the CSS transition for next time
+      } else {
+        track.style.transition = '';
+        track.style.transform = 'translate3d(' + px + 'px,0,0)';
+      }
+    }
+
+    function ensureClone() {
+      if (clone) return;
+      clone = cards[0].cloneNode(true);
+      clone.classList.add('review-card--clone');
+      clone.setAttribute('aria-hidden', 'true'); // visual only — not announced
+      track.appendChild(clone);
+    }
+
+    function paintDots() {
+      var active = idx % cards.length; // clone slot maps back to the first dot
+      cards.forEach(function (c, i) { c.classList.toggle('is-active', i === active); });
+      if (dotsWrap) {
+        dotsWrap.querySelectorAll('.reviews-dot').forEach(function (d, i) {
+          d.classList.toggle('is-active', i === active);
+        });
+      }
+    }
 
     function buildDots() {
       dotsWrap = document.createElement('div');
@@ -199,42 +248,51 @@
       marquee.appendChild(dotsWrap);
     }
 
-    function paint() {
-      cards.forEach(function (c, i) { c.classList.toggle('is-active', i === idx); });
-      if (marquee.classList.contains('reviews-marquee--steps')) {
-        // Slide the track to the active card. Each genuine card is one full
-        // marquee width, so the offset is idx whole widths. We translate by an
-        // explicit pixel amount via translate3d rather than a percentage: iOS
-        // Safari renders percentage transform transitions on an overflowing flex
-        // track jankily (the card half-snaps into place), whereas a pixel
-        // translate3d gets a clean, compositor-driven glide.
-        track.style.transform = 'translate3d(' + (-idx * marquee.clientWidth) + 'px,0,0)';
-      }
-      if (dotsWrap) {
-        dotsWrap.querySelectorAll('.reviews-dot').forEach(function (d, i) {
-          d.classList.toggle('is-active', i === idx);
-        });
-      }
+    // A direct jump to a real card (dot taps). Always lands on a genuine slot,
+    // so no wrap handling needed.
+    function goTo(i) {
+      if (!marquee.classList.contains('reviews-marquee--steps')) return;
+      idx = ((i % cards.length) + cards.length) % cards.length;
+      setX(-idx * stepWidth(), true);
+      paintDots();
     }
-    function goTo(i)   { idx = (i + cards.length) % cards.length; paint(); }
-    function advance() { goTo(idx + 1); }
-    function restart() { stop(); timer = setInterval(advance, 5000); }
+
+    function advance() {
+      if (sliding || !marquee.classList.contains('reviews-marquee--steps')) return;
+      sliding = true;
+      idx += 1;
+      setX(-idx * stepWidth(), true); // glide forward (onto the clone at the end)
+      paintDots();
+      window.setTimeout(function () {
+        // Landed on the trailing clone (a copy of card 0)? Snap back to the real
+        // first card with no transition — invisible because they're identical.
+        if (idx === cards.length) { idx = 0; setX(0, false); }
+        sliding = false;
+      }, SLIDE);
+    }
+
+    function restart() { stop(); timer = window.setInterval(advance, DWELL); }
     function stop()    { if (timer) { clearInterval(timer); timer = null; } }
 
     function enable() {
       if (marquee.classList.contains('reviews-marquee--steps')) return;
+      ensureClone();
       if (!dotsWrap) buildDots();
       marquee.classList.add('reviews-marquee--steps');
       idx = 0;
-      paint();
+      sliding = false;
+      setX(0, false);
+      paintDots();
       restart();
     }
     function disable() {
       if (!marquee.classList.contains('reviews-marquee--steps')) return;
       stop();
+      sliding = false;
       marquee.classList.remove('reviews-marquee--steps');
       cards.forEach(function (c) { c.classList.remove('is-active'); });
       // Hand transform control back to the desktop marquee animation.
+      track.style.transition = '';
       track.style.transform = '';
     }
     function sync() {
@@ -255,19 +313,15 @@
       else if (marquee.classList.contains('reviews-marquee--steps')) restart();
     });
 
-    // The slide offset is now in pixels, so a rotation / width change moves the
-    // target. Snap the track to the current card without animating (so it
-    // doesn't slide sideways on resize), then restore the CSS transition for the
-    // next real step.
+    // The step offset is in pixels, so a rotation / width change moves the
+    // target. Re-snap the track to the current card without animating so it
+    // doesn't drift sideways on resize.
     var resizeRAF = null;
     window.addEventListener('resize', function () {
       if (!marquee.classList.contains('reviews-marquee--steps')) return;
       if (resizeRAF) cancelAnimationFrame(resizeRAF);
       resizeRAF = requestAnimationFrame(function () {
-        track.style.transition = 'none';
-        paint();
-        void track.offsetWidth; // force reflow so the no-transition jump applies
-        track.style.transition = '';
+        setX(-(idx % cards.length) * stepWidth(), false);
       });
     });
   })();
