@@ -1743,11 +1743,16 @@ select:focus-visible {
 .reviews-dots {
   display: none;
   justify-content: center;
+  align-items: center;
   gap: .55rem;
   margin-top: 1.6rem;
   /* Fade the row out toward both ends so the dots echo the looping cards above,
-     which themselves bleed into the background at the edges. */
-  padding: 0 1.4rem;
+     which themselves bleed into the background at the edges. The vertical
+     padding matters: the mask below defaults to mask-clip: border-box, so the
+     active dot's scale(1.35) (≈10.8px) would be sliced flat top and bottom if
+     the row were only as tall as an 8px dot. The 8px block gives the enlarged
+     dot room to paint fully inside the masked box. */
+  padding: 8px 1.4rem;
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
           mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
 }

@@ -190,7 +190,7 @@
     var small  = window.matchMedia('(max-width: 720px)');
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    var DWELL = 4500; // ms of inactivity before auto-advance fires
+    var DWELL = 3000; // ms of inactivity before auto-advance fires
     var ANIM  = 620;  // ms of the auto-advance momentum glide
 
     var idx           = 0;         // global card index within the 3N track (clones included)
@@ -349,14 +349,18 @@
       });
     }
 
+    /* Auto-advance once the carousel has been untouched for DWELL ms. Re-check on
+       every tick (rather than committing to an advance) so a swipe or tap during
+       the wait always restarts the full idle window — the strip only moves on its
+       own after a genuine DWELL-long pause in interaction. */
     function scheduleNext() {
       if (timer) clearTimeout(timer);
-      timer = window.setTimeout(function () {
-        if (Date.now() - lastTouchTime >= DWELL) {
+      timer = window.setTimeout(function tick() {
+        var idle = Date.now() - lastTouchTime;
+        if (idle >= DWELL) {
           advance();
         } else {
-          var remaining = DWELL - (Date.now() - lastTouchTime);
-          timer = window.setTimeout(advance, Math.max(remaining, 200));
+          timer = window.setTimeout(tick, Math.max(DWELL - idle, 200));
         }
       }, DWELL);
     }
