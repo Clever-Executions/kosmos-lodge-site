@@ -161,4 +161,88 @@
     });
   });
 
+  /* ── Mobile review stepper ──
+     On desktop the reviews strip is a continuous CSS marquee. On phones that
+     reads poorly, so here we switch it into a one-at-a-time slideshow: each real
+     review springs into place (see .reviews-marquee--steps in the CSS) and the
+     next takes over five seconds later. We only engage this on small screens and
+     never when the visitor prefers reduced motion. */
+  (function () {
+    var marquee = document.querySelector('.reviews-marquee');
+    var track   = marquee && marquee.querySelector('.reviews-track');
+    if (!marquee || !track) return;
+
+    // The marquee duplicates its cards (the copies carry aria-hidden) so the
+    // loop is seamless; the stepper only cycles the genuine reviews.
+    var cards = Array.prototype.slice.call(
+      track.querySelectorAll('.review-card:not([aria-hidden="true"])')
+    );
+    if (cards.length < 2) return;
+
+    var small   = window.matchMedia('(max-width: 720px)');
+    var reduce  = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var idx     = 0;
+    var timer   = null;
+    var dotsWrap = null;
+
+    function buildDots() {
+      dotsWrap = document.createElement('div');
+      dotsWrap.className = 'reviews-dots';
+      cards.forEach(function (_, i) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'reviews-dot';
+        dot.setAttribute('aria-label', 'Show review ' + (i + 1));
+        dot.addEventListener('click', function () { goTo(i); restart(); });
+        dotsWrap.appendChild(dot);
+      });
+      marquee.appendChild(dotsWrap);
+    }
+
+    function paint() {
+      cards.forEach(function (c, i) { c.classList.toggle('is-active', i === idx); });
+      if (dotsWrap) {
+        dotsWrap.querySelectorAll('.reviews-dot').forEach(function (d, i) {
+          d.classList.toggle('is-active', i === idx);
+        });
+      }
+    }
+    function goTo(i)   { idx = (i + cards.length) % cards.length; paint(); }
+    function advance() { goTo(idx + 1); }
+    function restart() { stop(); timer = setInterval(advance, 5000); }
+    function stop()    { if (timer) { clearInterval(timer); timer = null; } }
+
+    function enable() {
+      if (marquee.classList.contains('reviews-marquee--steps')) return;
+      if (!dotsWrap) buildDots();
+      marquee.classList.add('reviews-marquee--steps');
+      idx = 0;
+      paint();
+      restart();
+    }
+    function disable() {
+      if (!marquee.classList.contains('reviews-marquee--steps')) return;
+      stop();
+      marquee.classList.remove('reviews-marquee--steps');
+      cards.forEach(function (c) { c.classList.remove('is-active'); });
+    }
+    function sync() {
+      if (small.matches && !reduce.matches) enable();
+      else disable();
+    }
+
+    sync();
+    // matchMedia change events keep the mode correct across resizes / rotation.
+    if (small.addEventListener)  { small.addEventListener('change', sync); }
+    else if (small.addListener)  { small.addListener(sync); }
+    if (reduce.addEventListener) { reduce.addEventListener('change', sync); }
+    else if (reduce.addListener) { reduce.addListener(sync); }
+
+    // Don't advance in a backgrounded tab; resume when the stepper is active.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) stop();
+      else if (marquee.classList.contains('reviews-marquee--steps')) restart();
+    });
+  })();
+
 })();

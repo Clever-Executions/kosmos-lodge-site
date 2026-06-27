@@ -1079,7 +1079,10 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   .room-detail-section, .explore-detail-section { padding-top: 2.5rem; padding-bottom: 3.5rem; }
   .section-header { margin-bottom: 1.75rem; }
 
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  /* The amenity icon strip crowds and wraps awkwardly on phones, so we hide it
+     here. The same amenities are already conveyed by the room/feature copy and
+     tags further down the page, so nothing essential is lost on mobile. */
+  .features-strip { display: none; }
   .about-grid  { grid-template-columns: 1fr; gap: 3rem; }
   .about-image-stack { padding-right: 0; padding-bottom: 4rem; }
   .about-img-accent { right: 0; }
@@ -1111,17 +1114,12 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   .top-bar .container { justify-content: center; text-align: center; }
 
   /* Keep multi-up grids — the whole point of the mobile overhaul. */
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
   .gallery-grid  { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 124px; gap: .5rem; }
   .rooms-grid,
   .explore-grid,
   .rooms-nav-grid,
   .explore-cards-grid,
   .specials-grid { gap: .7rem; }
-
-  /* Compact feature cards (icon + label) for a tight 2-up "at a glance" strip. */
-  .feature-card { padding: 1.5rem .75rem; }
-  .feature-icon { width: 44px; height: 44px; font-size: 1.1rem; }
 
   /* ── Room cards: condense the body so two fit comfortably side by side ── */
   .room-card-body { padding: .85rem; }
@@ -1645,6 +1643,61 @@ select:focus-visible {
   }
   .review-card-quote { font-size: 1.08rem; }
   .reviews-track { animation-duration: 95s; }
+}
+
+/* ── Mobile "spring" stepper ──
+   On phones the continuous marquee scrolls reviews past too quickly to read, so
+   kosmos-modern.js switches the strip into a one-at-a-time slideshow: each real
+   review springs into place and the next takes over five seconds later. The JS
+   adds .reviews-marquee--steps (only on small screens, never under reduced
+   motion), so these styles stay dormant on desktop. */
+.reviews-marquee--steps {
+  overflow: visible;
+  -webkit-mask-image: none;
+          mask-image: none;
+}
+.reviews-marquee--steps .reviews-track {
+  animation: none;
+  display: block;
+  width: 100%;
+}
+.reviews-marquee--steps .review-card {
+  display: none;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.reviews-marquee--steps .review-card.is-active {
+  display: flex;
+  animation: reviewSpring .6s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes reviewSpring {
+  0%   { opacity: 0; transform: translateY(22px) scale(.92); }
+  55%  { opacity: 1; transform: translateY(-5px) scale(1.025); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+/* Position dots — JS-generated, shown only in stepper mode. */
+.reviews-dots {
+  display: none;
+  justify-content: center;
+  gap: .55rem;
+  margin-top: 1.6rem;
+}
+.reviews-marquee--steps .reviews-dots { display: flex; }
+.reviews-dot {
+  width: 8px; height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,.28);
+  cursor: pointer;
+  transition: var(--trans);
+}
+.reviews-dot.is-active {
+  background: var(--gold);
+  transform: scale(1.35);
 }
 
 /* Reduced motion: stop the marquee, show the real reviews as a static,
