@@ -1646,6 +1646,18 @@ select:focus-visible {
 .review-card-source { margin-left: auto; color: var(--green); font-size: 1.05rem; }
 
 @media (max-width: 720px) {
+  /* The emerald glow blob sat bottom-right, directly behind the carousel band.
+     As the opaque cards scrolled across it the revealed slice of green shifted,
+     which read as a "moving green artifact" beneath the cards. Pull it down and
+     centre it below the card band as soft ambient floor light, and dim it so any
+     residual reveal is imperceptible. */
+  .reviews-section::after {
+    width: 300px; height: 300px;
+    bottom: -150px; right: 50%;
+    transform: translateX(50%);
+    opacity: .09;
+  }
+
   /* Keep the three proof figures together as a compact band — stacking them
      made each tiny stat eat a whole screen. */
   .reviews-stats { grid-template-columns: repeat(3, 1fr); gap: .55rem; max-width: 100%; }
@@ -1692,6 +1704,10 @@ select:focus-visible {
 }
 .reviews-marquee--steps .reviews-track {
   animation: none;
+  /* The marquee's translate compositing hint is irrelevant once we're a native
+     scroller; clearing it avoids a stale GPU layer that tinted/smeared the glow
+     behind the moving cards. */
+  will-change: auto;
   display: flex;
   width: 100%;
   /* padding: 0 9vw centres each 82vw card: 9vw + 82vw/2 = 50vw. */
@@ -1706,10 +1722,10 @@ select:focus-visible {
   -ms-overflow-style: none;     /* IE/Edge */
 }
 .reviews-marquee--steps .reviews-track::-webkit-scrollbar { display: none; }
-/* Duplicate cards (aria-hidden="true") stay visible in stepper mode so the
-   carousel can scroll seamlessly past the last card into the duplicate set
-   before the JS silently resets the scroll position. Screen readers already
-   ignore them via aria-hidden. */
+/* In stepper mode the JS lays the track out as [clones | originals | clones]
+   (the .is-clone cards). The server-rendered duplicate cards are redundant
+   there, so hide them to keep the block widths exact for the seamless loop. */
+.reviews-marquee--steps .review-card[aria-hidden="true"]:not(.is-clone) { display: none; }
 .reviews-marquee--steps .review-card {
   /* 82vw: narrow enough to show a peek of the next card on either side. */
   flex: 0 0 82vw;
@@ -1729,6 +1745,11 @@ select:focus-visible {
   justify-content: center;
   gap: .55rem;
   margin-top: 1.6rem;
+  /* Fade the row out toward both ends so the dots echo the looping cards above,
+     which themselves bleed into the background at the edges. */
+  padding: 0 1.4rem;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
 }
 .reviews-dot {
   width: 8px; height: 8px;
