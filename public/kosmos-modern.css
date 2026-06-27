@@ -248,7 +248,7 @@ button { font-family: 'Jost', sans-serif; cursor: pointer; }
   margin: 0 auto 2.2rem;
   line-height: 1.7;
 }
-.hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
 .hero-scroll {
   position: absolute; bottom: 2.2rem; left: 50%;
   z-index: 2;
@@ -1673,6 +1673,10 @@ select:focus-visible {
   display: flex;
   width: 100%;
   transition: transform .6s cubic-bezier(.22, 1, .36, 1);
+  /* Keep the track on its own compositor layer so iOS Safari glides the slide
+     instead of half-painting it. Paired with the pixel translate3d set in JS. */
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
 }
 /* Only the genuine reviews take part in the slideshow — hide the marquee's
    duplicate copies so each step lands on an exact 100% boundary. */
