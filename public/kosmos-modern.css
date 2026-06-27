@@ -1679,17 +1679,23 @@ select:focus-visible {
    motion), so these styles stay dormant on desktop. */
 .reviews-marquee--steps {
   overflow: hidden;
-  -webkit-mask-image: none;
-          mask-image: none;
+  /* Break out of the .container's horizontal padding so the carousel spans
+     the full viewport width. The section has overflow:clip so no h-scroll. */
+  margin: 0 -1.5rem;
+  /* Soft edge fade: peeking next card blends into the section background
+     rather than cutting off hard at the viewport edge. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
 }
 .reviews-marquee--steps .reviews-track {
-  /* Swap the continuous marquee for a real slider: lay the genuine reviews out
-     in a row and slide the track one full card at a time. JS sets the transform
-     (translateX(-idx * 100%)); the transition is what makes it glide instead of
-     teleport. */
   animation: none;
   display: flex;
   width: 100%;
+  /* Gap between cards + lead/trail padding so the next card peeks without
+     touching the edge. box-sizing so padding is inside the 100% width. */
+  gap: 1rem;
+  padding: 0 1.25rem;
+  box-sizing: border-box;
   transition: transform .6s cubic-bezier(.22, 1, .36, 1);
   /* Keep the track on its own compositor layer so iOS Safari glides the slide
      instead of half-painting it. Paired with the pixel translate3d set in JS. */
@@ -1705,9 +1711,12 @@ select:focus-visible {
   display: none;
 }
 .reviews-marquee--steps .review-card {
-  flex: 0 0 100%;
-  width: 100%;
-  max-width: 100%;
+  /* 82vw makes each card slightly narrower than the viewport so the leading
+     edge of the next card peeks in on the right — giving a clear affordance
+     that the carousel is swipeable. */
+  flex: 0 0 82vw;
+  width: 82vw;
+  max-width: 82vw;
   margin: 0;
 }
 
