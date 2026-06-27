@@ -161,76 +161,39 @@
     });
   });
 
-  /* ── Mobile review stepper ──
+  /* ── Mobile scroll-snap carousel ──
      On desktop the reviews strip is a continuous CSS marquee. On phones that
-     reads poorly, so here we switch it into a one-at-a-time slideshow: each real
-     review springs into place (see .reviews-marquee--steps in the CSS) and the
-     next takes over five seconds later. We only engage this on small screens and
-     never when the visitor prefers reduced motion. */
+     reads poorly, so we switch it into a native scroll-snap carousel: one card
+     snaps into the centre, the user can swipe with full momentum physics, and
+     an auto-advance timer scrolls to the next card every few seconds. */
   (function () {
     var marquee = document.querySelector('.reviews-marquee');
     var track   = marquee && marquee.querySelector('.reviews-track');
     if (!marquee || !track) return;
 
-    // The marquee duplicates its cards (the copies carry aria-hidden) so the
-    // desktop loop is seamless; the stepper only cycles the genuine reviews.
     var cards = Array.prototype.slice.call(
       track.querySelectorAll('.review-card:not([aria-hidden="true"])')
     );
     if (cards.length < 2) return;
 
-    var small   = window.matchMedia('(max-width: 720px)');
-    var reduce  = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var small  = window.matchMedia('(max-width: 720px)');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    var DWELL = 4000; // ms each review rests on screen
-    var SLIDE = 600;  // ms slide duration — MUST match the CSS transition below
+    var DWELL = 4000; // ms each card rests before auto-advancing
 
-    // idx runs 0..cards.length. The last slot (cards.length) is a clone of the
-    // first review appended after the genuine cards: we always step FORWARD onto
-    // it, then — once that slide finishes — snap silently back to the real first
-    // card. That gives an endless one-directional glide with no backward "rewind"
-    // sweep through every card (the old 5→0 jump was the glitchy rapid motion).
     var idx      = 0;
     var timer    = null;
-    var sliding  = false;
     var dotsWrap = null;
-    var clone    = null;
 
-    // Exact per-step pixel distance. Cards are now narrower than the viewport
-    // (to show a peek of the next card) with a CSS gap between them, so the step
-    // = cardWidth + gap. Measuring left-edge of card[1] minus left-edge of card[0]
-    // captures both in one shot — robust to any CSS layout change.
+    // Per-step scroll distance = card width + gap. Use offsetWidth + columnGap
+    // so the measurement doesn't depend on scroll position.
     function stepWidth() {
-      if (cards.length > 1) {
-        return cards[1].getBoundingClientRect().left - cards[0].getBoundingClientRect().left;
-      }
-      return cards[0].getBoundingClientRect().width;
-    }
-
-    // Move the track. `animate` true → let the CSS transition glide it; false →
-    // jump with no transition (used for the seamless wrap and on resize).
-    function setX(px, animate) {
-      if (!animate) {
-        track.style.transition = 'none';
-        track.style.transform = 'translate3d(' + px + 'px,0,0)';
-        void track.offsetWidth; // force reflow so the jump applies before we…
-        track.style.transition = ''; // …restore the CSS transition for next time
-      } else {
-        track.style.transition = '';
-        track.style.transform = 'translate3d(' + px + 'px,0,0)';
-      }
-    }
-
-    function ensureClone() {
-      if (clone) return;
-      clone = cards[0].cloneNode(true);
-      clone.classList.add('review-card--clone');
-      clone.setAttribute('aria-hidden', 'true'); // visual only — not announced
-      track.appendChild(clone);
+      var gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
+      return cards[0].offsetWidth + gap;
     }
 
     function paintDots() {
-      var active = idx % cards.length; // clone slot maps back to the first dot
+      var active = ((idx % cards.length) + cards.length) % cards.length;
       cards.forEach(function (c, i) { c.classList.toggle('is-active', i === active); });
       if (dotsWrap) {
         dotsWrap.querySelectorAll('.reviews-dot').forEach(function (d, i) {
@@ -250,87 +213,101 @@
         dot.addEventListener('click', function () { goTo(i); restart(); });
         dotsWrap.appendChild(dot);
       });
-      // Insert AFTER the marquee (as a sibling, not a child) so the active
-      // dot's scale transform isn't clipped by .reviews-marquee's overflow:hidden.
+      // Sibling of the marquee so overflow:hidden can't clip the active dot.
       marquee.insertAdjacentElement('afterend', dotsWrap);
     }
 
-    // A direct jump to a real card (dot taps). Always lands on a genuine slot,
-    // so no wrap handling needed.
     function goTo(i) {
-      if (!marquee.classList.contains('reviews-marquee--steps')) return;
       idx = ((i % cards.length) + cards.length) % cards.length;
-      setX(-idx * stepWidth(), true);
+      track.scrollTo({ left: idx * stepWidth(), behavior: 'smooth' });
       paintDots();
     }
 
     function advance() {
-      if (sliding || !marquee.classList.contains('reviews-marquee--steps')) return;
-      sliding = true;
-      idx += 1;
-      setX(-idx * stepWidth(), true); // glide forward (onto the clone at the end)
+      var next = (idx + 1) % cards.length;
+      if (next === 0) {
+        // Wrap: jump instantly to the start (user isn't touching during auto-advance).
+        track.scrollLeft = 0;
+        idx = 0;
+      } else {
+        idx = next;
+        track.scrollTo({ left: idx * stepWidth(), behavior: 'smooth' });
+      }
       paintDots();
-      window.setTimeout(function () {
-        // Landed on the trailing clone (a copy of card 0)? Snap back to the real
-        // first card with no transition — invisible because they're identical.
-        if (idx === cards.length) { idx = 0; setX(0, false); }
-        sliding = false;
-      }, SLIDE);
     }
 
     function restart() { stop(); timer = window.setInterval(advance, DWELL); }
     function stop()    { if (timer) { clearInterval(timer); timer = null; } }
 
+    // Keep dots in sync when the user swipes manually.
+    var scrollRAF = null;
+    function onScroll() {
+      if (scrollRAF) return;
+      scrollRAF = requestAnimationFrame(function () {
+        scrollRAF = null;
+        var sw = stepWidth();
+        if (!sw) return;
+        var newIdx = Math.round(track.scrollLeft / sw);
+        newIdx = Math.max(0, Math.min(newIdx, cards.length - 1));
+        if (newIdx !== idx) { idx = newIdx; paintDots(); }
+      });
+    }
+
+    function onTouchEnd() {
+      // Brief pause so the snap settles, then resume auto-advance.
+      window.setTimeout(restart, 1500);
+    }
+
     function enable() {
       if (marquee.classList.contains('reviews-marquee--steps')) return;
-      ensureClone();
       if (!dotsWrap) buildDots();
       marquee.classList.add('reviews-marquee--steps');
       if (dotsWrap) dotsWrap.style.display = 'flex';
       idx = 0;
-      sliding = false;
-      setX(0, false);
+      track.scrollLeft = 0;
       paintDots();
+      track.addEventListener('scroll',     onScroll,    { passive: true });
+      track.addEventListener('touchstart', stop,         { passive: true });
+      track.addEventListener('touchend',   onTouchEnd,  { passive: true });
       restart();
     }
+
     function disable() {
       if (!marquee.classList.contains('reviews-marquee--steps')) return;
       stop();
-      sliding = false;
+      track.removeEventListener('scroll',     onScroll);
+      track.removeEventListener('touchstart', stop);
+      track.removeEventListener('touchend',   onTouchEnd);
       marquee.classList.remove('reviews-marquee--steps');
       if (dotsWrap) dotsWrap.style.display = '';
       cards.forEach(function (c) { c.classList.remove('is-active'); });
-      // Hand transform control back to the desktop marquee animation.
-      track.style.transition = '';
-      track.style.transform = '';
+      track.scrollLeft = 0;
     }
+
     function sync() {
       if (small.matches && !reduce.matches) enable();
       else disable();
     }
 
     sync();
-    // matchMedia change events keep the mode correct across resizes / rotation.
     if (small.addEventListener)  { small.addEventListener('change', sync); }
     else if (small.addListener)  { small.addListener(sync); }
     if (reduce.addEventListener) { reduce.addEventListener('change', sync); }
     else if (reduce.addListener) { reduce.addListener(sync); }
 
-    // Don't advance in a backgrounded tab; resume when the stepper is active.
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) stop();
       else if (marquee.classList.contains('reviews-marquee--steps')) restart();
     });
 
-    // The step offset is in pixels, so a rotation / width change moves the
-    // target. Re-snap the track to the current card without animating so it
-    // doesn't drift sideways on resize.
+    // On rotation/resize: re-snap to current card without animation since
+    // the step size in pixels changes with the viewport width.
     var resizeRAF = null;
     window.addEventListener('resize', function () {
       if (!marquee.classList.contains('reviews-marquee--steps')) return;
       if (resizeRAF) cancelAnimationFrame(resizeRAF);
       resizeRAF = requestAnimationFrame(function () {
-        setX(-(idx % cards.length) * stepWidth(), false);
+        track.scrollLeft = idx * stepWidth();
       });
     });
   })();
