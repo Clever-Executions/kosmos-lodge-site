@@ -1643,6 +1643,14 @@ select:focus-visible {
   }
   .review-card-quote { font-size: 1.08rem; }
   .reviews-track { animation-duration: 95s; }
+
+  /* Centre the card contents on phones — left-aligned stars, quote and a
+     right-shoved Google icon read as off-balance on a narrow, single-card view. */
+  .review-card-stars { justify-content: center; }
+  .review-card-quote { text-align: center; }
+  .review-card-author { justify-content: center; }
+  .review-card-meta { align-items: center; text-align: center; }
+  .review-card-source { margin-left: .4rem; }
 }
 
 /* ── Mobile "spring" stepper ──
@@ -1652,30 +1660,30 @@ select:focus-visible {
    adds .reviews-marquee--steps (only on small screens, never under reduced
    motion), so these styles stay dormant on desktop. */
 .reviews-marquee--steps {
-  overflow: visible;
+  overflow: hidden;
   -webkit-mask-image: none;
           mask-image: none;
 }
 .reviews-marquee--steps .reviews-track {
+  /* Swap the continuous marquee for a real slider: lay the genuine reviews out
+     in a row and slide the track one full card at a time. JS sets the transform
+     (translateX(-idx * 100%)); the transition is what makes it glide instead of
+     teleport. */
   animation: none;
-  display: block;
+  display: flex;
   width: 100%;
+  transition: transform .6s cubic-bezier(.22, 1, .36, 1);
+}
+/* Only the genuine reviews take part in the slideshow — hide the marquee's
+   duplicate copies so each step lands on an exact 100% boundary. */
+.reviews-marquee--steps .review-card[aria-hidden="true"] {
+  display: none;
 }
 .reviews-marquee--steps .review-card {
-  display: none;
+  flex: 0 0 100%;
   width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-}
-.reviews-marquee--steps .review-card.is-active {
-  display: flex;
-  animation: reviewSpring .6s cubic-bezier(.22, 1, .36, 1) both;
-}
-
-@keyframes reviewSpring {
-  0%   { opacity: 0; transform: translateY(22px) scale(.92); }
-  55%  { opacity: 1; transform: translateY(-5px) scale(1.025); }
-  100% { opacity: 1; transform: translateY(0)   scale(1); }
+  max-width: 100%;
+  margin: 0;
 }
 
 /* Position dots — JS-generated, shown only in stepper mode. */

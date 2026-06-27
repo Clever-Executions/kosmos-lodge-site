@@ -201,6 +201,12 @@
 
     function paint() {
       cards.forEach(function (c, i) { c.classList.toggle('is-active', i === idx); });
+      if (marquee.classList.contains('reviews-marquee--steps')) {
+        // Slide the track to the active card. Each genuine card is a 100%-wide
+        // slot, so one step is a clean -idx*100% translate (the CSS transition
+        // animates it).
+        track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+      }
       if (dotsWrap) {
         dotsWrap.querySelectorAll('.reviews-dot').forEach(function (d, i) {
           d.classList.toggle('is-active', i === idx);
@@ -225,6 +231,8 @@
       stop();
       marquee.classList.remove('reviews-marquee--steps');
       cards.forEach(function (c) { c.classList.remove('is-active'); });
+      // Hand transform control back to the desktop marquee animation.
+      track.style.transform = '';
     }
     function sync() {
       if (small.matches && !reduce.matches) enable();
